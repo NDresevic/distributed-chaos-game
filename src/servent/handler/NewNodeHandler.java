@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import app.AppConfig;
-import app.ServentInfo;
+import app.models.ServentInfo;
 import servent.message.Message;
 import servent.message.MessageType;
 import servent.message.NewNodeMessage;
@@ -25,11 +25,13 @@ public class NewNodeHandler implements MessageHandler {
 	public void run() {
 		if (clientMessage.getMessageType() == MessageType.NEW_NODE) {
 			int newNodePort = clientMessage.getSenderPort();
-			ServentInfo newNodeInfo = new ServentInfo("localhost", newNodePort);
+			String newNodeIpAddress = clientMessage.getSenderIpAddress();
+			ServentInfo newNodeInfo = new ServentInfo(newNodeIpAddress, newNodePort);
 			
 			//check if the new node collides with another existing node.
 			if (AppConfig.chordState.isCollision(newNodeInfo.getChordId())) {
-				Message sry = new SorryMessage(AppConfig.myServentInfo.getListenerPort(), clientMessage.getSenderPort());
+				Message sry = new SorryMessage(AppConfig.myServentInfo.getListenerPort(), clientMessage.getSenderPort(),
+						clientMessage.getSenderIpAddress(), clientMessage.getReceiverIpAddress());
 				MessageUtil.sendMessage(sry);
 				return;
 			}
@@ -86,11 +88,13 @@ public class NewNodeHandler implements MessageHandler {
 				}
 				AppConfig.chordState.setValueMap(myValues);
 				
-				WelcomeMessage wm = new WelcomeMessage(AppConfig.myServentInfo.getListenerPort(), newNodePort, hisValues);
+				WelcomeMessage wm = new WelcomeMessage(AppConfig.myServentInfo.getListenerPort(), newNodePort,
+						AppConfig.myServentInfo.getIpAddress(), newNodeIpAddress, hisValues);
 				MessageUtil.sendMessage(wm);
 			} else { //if he is not my predecessor, let someone else take care of it
 				ServentInfo nextNode = AppConfig.chordState.getNextNodeForKey(newNodeInfo.getChordId());
-				NewNodeMessage nnm = new NewNodeMessage(newNodePort, nextNode.getListenerPort());
+				NewNodeMessage nnm = new NewNodeMessage(newNodePort, nextNode.getListenerPort(),
+						newNodeIpAddress, nextNode.getIpAddress());
 				MessageUtil.sendMessage(nnm);
 			}
 			

@@ -11,6 +11,7 @@ import java.io.Serializable;
  * 		<li>Message type</li>
  * 		<li>Sender port</li>
  * 		<li>Receiver port</li>
+ * 	 	<li>Sender IP address</li>
  * 		<li>Receiver IP address</li>
  * 		<li>Arbitrary message text</li>
  * 		</ul>
@@ -32,6 +33,11 @@ public interface Message extends Serializable {
 	 * Port number of the receiver of the message.
 	 */
 	int getReceiverPort();
+
+	/**
+	 * IP address of the sender.
+	 */
+	String getSenderIpAddress();
 	
 	/**
 	 * IP address of the receiver.

@@ -1,11 +1,17 @@
 package app;
 
+import app.models.Job;
+import app.models.Point;
+import app.models.ServentInfo;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -43,9 +49,9 @@ public class AppConfig {
 	}
 	
 	public static boolean INITIALIZED = false;
+	public static String BOOTSTRAP_IP_ADDRESS;
 	public static int BOOTSTRAP_PORT;
-	public static int SERVENT_COUNT;
-	
+
 	public static ChordState chordState;
 	
 	/**
@@ -53,23 +59,15 @@ public class AppConfig {
 	 * The config file should be of the following format:
 	 * <br/>
 	 * <code><br/>
-	 * servent_count=3 			- number of servents in the system <br/>
-	 * chord_size=64			- maximum value for Chord keys <br/>
-	 * bs.port=2000				- bootstrap server listener port <br/>
-	 * servent0.port=1100 		- listener ports for each servent <br/>
-	 * servent1.port=1200 <br/>
-	 * servent2.port=1300 <br/>
+	 * bootstrap.ip=localhost			- bootstrap server ip address <br/>
+	 * bootstrap.port=2000				- bootstrap server listener port <br/>
 	 * 
 	 * </code>
 	 * <br/>
-	 * So in this case, we would have three servents, listening on ports:
-	 * 1100, 1200, and 1300. A bootstrap server listening on port 2000, and Chord system with
-	 * max 64 keys and 64 nodes.<br/>
-	 * 
+	 *
 	 * @param configName name of configuration file
-	 * @param serventId id of the servent, as used in the configuration file
 	 */
-	public static void readConfig(String configName, int serventId){
+	public static void readBootstrapConfig(String configName){
 		Properties properties = new Properties();
 		try {
 			properties.load(new FileInputStream(new File(configName)));
@@ -78,44 +76,91 @@ public class AppConfig {
 			timestampedErrorPrint("Couldn't open properties file. Exiting...");
 			System.exit(0);
 		}
-		
+
+		BOOTSTRAP_IP_ADDRESS = properties.getProperty("bootstrap.ip");
 		try {
-			BOOTSTRAP_PORT = Integer.parseInt(properties.getProperty("bs.port"));
+			BOOTSTRAP_PORT = Integer.parseInt(properties.getProperty("bootstrap.port"));
 		} catch (NumberFormatException e) {
 			timestampedErrorPrint("Problem reading bootstrap_port. Exiting...");
 			System.exit(0);
 		}
+
+		ChordState.CHORD_SIZE = 64;
 		
+		myServentInfo = new ServentInfo(BOOTSTRAP_IP_ADDRESS, BOOTSTRAP_PORT);
+	}
+
+	public static void readServentConfig(String configName, int serventId) {
+		Properties properties = new Properties();
 		try {
-			SERVENT_COUNT = Integer.parseInt(properties.getProperty("servent_count"));
-		} catch (NumberFormatException e) {
-			timestampedErrorPrint("Problem reading servent_count. Exiting...");
+			properties.load(new FileInputStream(new File(configName)));
+
+		} catch (IOException e) {
+			timestampedErrorPrint("Couldn't open properties file. Exiting...");
 			System.exit(0);
 		}
-		
+
+		ChordState.CHORD_SIZE = 64;
+		chordState = new ChordState();
+
 		try {
-			int chordSize = Integer.parseInt(properties.getProperty("chord_size"));
-			
-			ChordState.CHORD_SIZE = chordSize;
-			chordState = new ChordState();
-			
+			String ipAddress = properties.getProperty("ip");
+			int listenerPort = Integer.parseInt(properties.getProperty("port"));
+
+			myServentInfo = new ServentInfo(ipAddress, listenerPort);
 		} catch (NumberFormatException e) {
-			timestampedErrorPrint("Problem reading chord_size. Must be a number that is a power of 2. Exiting...");
+			timestampedErrorPrint("Problem reading ip_address or port. Exiting...");
 			System.exit(0);
 		}
-		
-		String portProperty = "servent" +serventId+".port";
-		
-		int serventPort = -1;
-		
+
+		BOOTSTRAP_IP_ADDRESS = properties.getProperty("bootstrap.ip");
 		try {
-			serventPort = Integer.parseInt(properties.getProperty(portProperty));
+			BOOTSTRAP_PORT = Integer.parseInt(properties.getProperty("bootstrap.port"));
 		} catch (NumberFormatException e) {
-			timestampedErrorPrint("Problem reading " + portProperty + ". Exiting...");
+			timestampedErrorPrint("Problem reading bootstrap_port. Exiting...");
 			System.exit(0);
 		}
-		
-		myServentInfo = new ServentInfo("localhost", serventPort);
+
+		try {
+			int weakFailureLimit = Integer.parseInt(properties.getProperty("weak_failure_limit"));
+			int strongFailureLimit = Integer.parseInt(properties.getProperty("strong_failure_limit"));
+
+			myServentInfo.setWeakFailureLimit(weakFailureLimit);
+			myServentInfo.setStrongFailureLimit(strongFailureLimit);
+		} catch (NumberFormatException e) {
+			timestampedErrorPrint("Problem reading ip_address or port. Exiting...");
+			System.exit(0);
+		}
+
+		String jobName = properties.getProperty("job_name");
+		if (jobName == null) {
+			return;
+		}
+
+		String[] pointsCoordinates = properties.getProperty("points.coordinates").split(";");
+		List<Point> points = new ArrayList<>();
+		try {
+			for (String coordinates: pointsCoordinates) {
+				String[] xy = coordinates.substring(1, coordinates.length() - 1).split(",");
+				points.add(new Point(Integer.parseInt(xy[0]), Integer.parseInt(xy[1])));
+			}
+		} catch (NumberFormatException e) {
+			timestampedErrorPrint("Problem reading points for the job. Exiting...");
+			System.exit(0);
+		}
+
+		try {
+			int pointsCount = Integer.parseInt(properties.getProperty("points.count"));
+			double proportion = Double.parseDouble(properties.getProperty("proportion"));
+			int width = Integer.parseInt(properties.getProperty("width"));
+			int height = Integer.parseInt(properties.getProperty("height"));
+
+			Job job = new Job(jobName, pointsCount, proportion, width, height, points);
+			myServentInfo.addJob(job);
+		} catch (NumberFormatException e) {
+			timestampedErrorPrint("Problem reading integer or double properties for the job. Exiting...");
+			System.exit(0);
+		}
 	}
 	
 }

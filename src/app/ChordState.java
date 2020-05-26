@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import app.models.ServentInfo;
 import servent.message.AskGetMessage;
 import servent.message.PutMessage;
 import servent.message.WelcomeMessage;
@@ -83,12 +84,12 @@ public class ChordState {
 	 */
 	public void init(WelcomeMessage welcomeMsg) {
 		//set a temporary pointer to next node, for sending of update message
-		successorTable[0] = new ServentInfo("localhost", welcomeMsg.getSenderPort());
+		successorTable[0] = new ServentInfo(welcomeMsg.getSenderIpAddress(), welcomeMsg.getSenderPort());
 		this.valueMap = welcomeMsg.getValues();
 		
 		//tell bootstrap this node is not a collider
 		try {
-			Socket bsSocket = new Socket("localhost", AppConfig.BOOTSTRAP_PORT);
+			Socket bsSocket = new Socket(AppConfig.BOOTSTRAP_IP_ADDRESS, AppConfig.BOOTSTRAP_PORT);
 			
 			PrintWriter bsWriter = new PrintWriter(bsSocket.getOutputStream());
 			bsWriter.write("New\n" + AppConfig.myServentInfo.getListenerPort() + "\n");
@@ -113,7 +114,9 @@ public class ChordState {
 	public int getNextNodePort() {
 		return successorTable[0].getListenerPort();
 	}
-	
+
+	public String getNextNodeIpAddress() { return successorTable[0].getIpAddress(); }
+
 	public ServentInfo getPredecessor() {
 		return predecessorInfo;
 	}
@@ -300,7 +303,8 @@ public class ChordState {
 			valueMap.put(key, value);
 		} else {
 			ServentInfo nextNode = getNextNodeForKey(key);
-			PutMessage pm = new PutMessage(AppConfig.myServentInfo.getListenerPort(), nextNode.getListenerPort(), key, value);
+			PutMessage pm = new PutMessage(AppConfig.myServentInfo.getListenerPort(), nextNode.getListenerPort(),
+					AppConfig.myServentInfo.getIpAddress(), nextNode.getIpAddress(), key, value);
 			MessageUtil.sendMessage(pm);
 		}
 	}
@@ -323,7 +327,8 @@ public class ChordState {
 		}
 		
 		ServentInfo nextNode = getNextNodeForKey(key);
-		AskGetMessage agm = new AskGetMessage(AppConfig.myServentInfo.getListenerPort(), nextNode.getListenerPort(), String.valueOf(key));
+		AskGetMessage agm = new AskGetMessage(AppConfig.myServentInfo.getListenerPort(), nextNode.getListenerPort(),
+				AppConfig.myServentInfo.getIpAddress(), nextNode.getIpAddress(), String.valueOf(key));
 		MessageUtil.sendMessage(agm);
 		
 		return -2;

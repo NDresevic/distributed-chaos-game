@@ -18,25 +18,26 @@ public class BasicMessage implements Message {
 	private final MessageType type;
 	private final int senderPort;
 	private final int receiverPort;
+	private final String senderIpAddress;
+	private final String receiverIpAddress;
 	private final String messageText;
 	
 	//This gives us a unique id - incremented in every natural constructor.
 	private static AtomicInteger messageCounter = new AtomicInteger(0);
 	private final int messageId;
 	
-	public BasicMessage(MessageType type, int senderPort, int receiverPort) {
-		this.type = type;
-		this.senderPort = senderPort;
-		this.receiverPort = receiverPort;
-		this.messageText = "";
-		
-		this.messageId = messageCounter.getAndIncrement();
+	public BasicMessage(MessageType type, int senderPort, int receiverPort, String senderIpAddress,
+						String receiverIpAddress) {
+		this(type, senderPort, receiverPort, senderIpAddress, receiverIpAddress, "");
 	}
 	
-	public BasicMessage(MessageType type, int senderPort, int receiverPort, String messageText) {
+	public BasicMessage(MessageType type, int senderPort, int receiverPort, String senderIpAddress,
+						String receiverIpAddress, String messageText) {
 		this.type = type;
 		this.senderPort = senderPort;
 		this.receiverPort = receiverPort;
+		this.senderIpAddress = senderIpAddress;
+		this.receiverIpAddress = receiverIpAddress;
 		this.messageText = messageText;
 		
 		this.messageId = messageCounter.getAndIncrement();
@@ -51,10 +52,15 @@ public class BasicMessage implements Message {
 	public int getReceiverPort() {
 		return receiverPort;
 	}
-	
+
+	@Override
+	public String getSenderIpAddress() {
+		return senderIpAddress;
+	}
+
 	@Override
 	public String getReceiverIpAddress() {
-		return "localhost";
+		return receiverIpAddress;
 	}
 	
 	@Override
@@ -73,7 +79,7 @@ public class BasicMessage implements Message {
 	}
 	
 	/**
-	 * Comparing messages is based on their unique id and the original sender port.
+	 * Comparing messages is based on their unique id and the original sender ip address and port.
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -81,6 +87,7 @@ public class BasicMessage implements Message {
 			BasicMessage other = (BasicMessage)obj;
 			
 			if (getMessageId() == other.getMessageId() &&
+				getSenderIpAddress() == other.getSenderIpAddress() &&
 				getSenderPort() == other.getSenderPort()) {
 				return true;
 			}
@@ -91,21 +98,22 @@ public class BasicMessage implements Message {
 	
 	/**
 	 * Hash needs to mirror equals, especially if we are gonna keep this object
-	 * in a set or a map. So, this is based on message id and original sender id also.
+	 * in a set or a map. So, this is based on message id, original sender ip address and port.
 	 */
 	@Override
 	public int hashCode() {
-		return Objects.hash(getMessageId(), getSenderPort());
+		return Objects.hash(getMessageId(), getSenderIpAddress(), getSenderPort());
 	}
 	
 	/**
-	 * Returns the message in the format: <code>[sender_id|sender_port|message_id|text|type|receiver_port|receiver_id]</code>
+	 * Returns the message in the format:
+	 * <code>[sender_id|sender_ip|sender_port|message_id|text|type|receiver_ip|receiver_port|receiver_id]</code>
 	 */
 	@Override
 	public String toString() {
-		return "[" + ChordState.chordHash(getSenderPort()) + "|" + getSenderPort() + "|" + getMessageId() + "|" +
-					getMessageText() + "|" + getMessageType() + "|" +
-					getReceiverPort() + "|" + ChordState.chordHash(getReceiverPort()) + "]";
+		return "[" + ChordState.chordHash(getSenderPort()) + "|" + getSenderIpAddress() + "|" + getSenderPort() +
+				"|" + getMessageId() + "|" + getMessageText() + "|" + getMessageType() +
+				"|" + getReceiverIpAddress() + "|" + getReceiverPort() +
+				"|" + ChordState.chordHash(getReceiverPort()) + "]";
 	}
-
 }

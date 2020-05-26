@@ -65,7 +65,7 @@ public class MultipleServentStarter {
 	private static void startServentTest(String testName) {
 		List<Process> serventProcesses = new ArrayList<>();
 		
-		AppConfig.readConfig(testName+"/servent_list.properties", 0);
+		AppConfig.readBootstrapConfig(testName+"/servent_list.properties");
 		
 		AppConfig.timestampedStandardPrint("Starting multiple servent runner. "
 				+ "If servents do not finish on their own, type \"stop\" to finish them");
@@ -85,37 +85,37 @@ public class MultipleServentStarter {
 			e1.printStackTrace();
 		}
 		
-		int serventCount = AppConfig.SERVENT_COUNT;
-		
-		for(int i = 0; i < serventCount; i++) {
-			try {
-				ProcessBuilder builder = new ProcessBuilder("java", "-cp", "bin/", "app.ServentMain",
-						testName+"/servent_list.properties", String.valueOf(i));
-				
-				//We use files to read and write.
-				//System.out, System.err and System.in will point to these files.
-				builder.redirectOutput(new File(testName+"/output/servent" + i + "_out.txt"));
-				builder.redirectError(new File(testName+"/error/servent" + i + "_err.txt"));
-				builder.redirectInput(new File(testName+"/input/servent" + i + "_in.txt"));
-				
-				//Starts the servent as a completely separate process.
-				Process p = builder.start();
-				serventProcesses.add(p);
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			try { //give each node 10s to start up
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		
+//		int serventCount = AppConfig.SERVENT_COUNT;
+//
+//		for(int i = 0; i < serventCount; i++) {
+//			try {
+//				ProcessBuilder builder = new ProcessBuilder("java", "-cp", "bin/", "app.ServentMain",
+//						testName+"/servent_list.properties", String.valueOf(i));
+//
+//				//We use files to read and write.
+//				//System.out, System.err and System.in will point to these files.
+//				builder.redirectOutput(new File(testName+"/output/servent" + i + "_out.txt"));
+//				builder.redirectError(new File(testName+"/error/servent" + i + "_err.txt"));
+//				builder.redirectInput(new File(testName+"/input/servent" + i + "_in.txt"));
+//
+//				//Starts the servent as a completely separate process.
+//				Process p = builder.start();
+//				serventProcesses.add(p);
+//
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//			try { //give each node 10s to start up
+//				Thread.sleep(10000);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//		}
+
 		Thread t = new Thread(new ServentCLI(serventProcesses, bsProcess));
-		
+
 		t.start(); //CLI thread waiting for user to type "stop".
-		
+
 		for (Process process : serventProcesses) {
 			try {
 				process.waitFor(); //Wait for graceful process finish.

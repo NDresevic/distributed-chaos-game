@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import app.AppConfig;
-import app.ServentInfo;
+import app.models.ServentInfo;
 import servent.message.Message;
 import servent.message.MessageType;
 import servent.message.UpdateMessage;
@@ -22,7 +22,7 @@ public class UpdateHandler implements MessageHandler {
 	public void run() {
 		if (clientMessage.getMessageType() == MessageType.UPDATE) {
 			if (clientMessage.getSenderPort() != AppConfig.myServentInfo.getListenerPort()) {
-				ServentInfo newNodInfo = new ServentInfo("localhost", clientMessage.getSenderPort());
+				ServentInfo newNodInfo = new ServentInfo(clientMessage.getSenderIpAddress(), clientMessage.getSenderPort());
 				List<ServentInfo> newNodes = new ArrayList<>();
 				newNodes.add(newNodInfo);
 				
@@ -34,7 +34,7 @@ public class UpdateHandler implements MessageHandler {
 					newMessageText = clientMessage.getMessageText() + "," + AppConfig.myServentInfo.getListenerPort();
 				}
 				Message nextUpdate = new UpdateMessage(clientMessage.getSenderPort(), AppConfig.chordState.getNextNodePort(),
-						newMessageText);
+						clientMessage.getSenderIpAddress(), AppConfig.chordState.getNextNodeIpAddress(), newMessageText);
 				MessageUtil.sendMessage(nextUpdate);
 			} else {
 				String messageText = clientMessage.getMessageText();
@@ -42,6 +42,7 @@ public class UpdateHandler implements MessageHandler {
 				
 				List<ServentInfo> allNodes = new ArrayList<>();
 				for (String port : ports) {
+					// TODO: promeni ovde localhost
 					allNodes.add(new ServentInfo("localhost", Integer.parseInt(port)));
 				}
 				AppConfig.chordState.addNodes(allNodes);

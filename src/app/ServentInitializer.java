@@ -13,11 +13,12 @@ public class ServentInitializer implements Runnable {
 
 	private int getSomeServentPort() {
 		int bsPort = AppConfig.BOOTSTRAP_PORT;
+		String bsIpAddress = AppConfig.BOOTSTRAP_IP_ADDRESS;
 		
 		int retVal = -2;
 		
 		try {
-			Socket bsSocket = new Socket("localhost", bsPort);
+			Socket bsSocket = new Socket(bsIpAddress, bsPort);
 			
 			PrintWriter bsWriter = new PrintWriter(bsSocket.getOutputStream());
 			bsWriter.write("Hail\n" + AppConfig.myServentInfo.getListenerPort() + "\n");
@@ -47,7 +48,8 @@ public class ServentInitializer implements Runnable {
 		if (someServentPort == -1) { //bootstrap gave us -1 -> we are first
 			AppConfig.timestampedStandardPrint("First node in Chord system.");
 		} else { //bootstrap gave us something else - let that node tell our successor that we are here
-			NewNodeMessage nnm = new NewNodeMessage(AppConfig.myServentInfo.getListenerPort(), someServentPort);
+			NewNodeMessage nnm = new NewNodeMessage(AppConfig.myServentInfo.getListenerPort(), someServentPort,
+					AppConfig.myServentInfo.getIpAddress(), "localhost");
 			MessageUtil.sendMessage(nnm);
 		}
 	}

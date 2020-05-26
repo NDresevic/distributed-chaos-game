@@ -3,7 +3,7 @@ package servent.handler;
 import java.util.Map;
 
 import app.AppConfig;
-import app.ServentInfo;
+import app.models.ServentInfo;
 import servent.message.AskGetMessage;
 import servent.message.Message;
 import servent.message.MessageType;
@@ -32,11 +32,13 @@ public class AskGetHandler implements MessageHandler {
 					}
 					
 					TellGetMessage tgm = new TellGetMessage(AppConfig.myServentInfo.getListenerPort(), clientMessage.getSenderPort(),
+															AppConfig.myServentInfo.getIpAddress(), clientMessage.getSenderIpAddress(),
 															key, value);
 					MessageUtil.sendMessage(tgm);
 				} else {
 					ServentInfo nextNode = AppConfig.chordState.getNextNodeForKey(key);
-					AskGetMessage agm = new AskGetMessage(clientMessage.getSenderPort(), nextNode.getListenerPort(), clientMessage.getMessageText());
+					AskGetMessage agm = new AskGetMessage(clientMessage.getSenderPort(), nextNode.getListenerPort(),
+							clientMessage.getSenderIpAddress(), nextNode.getIpAddress(), clientMessage.getMessageText());
 					MessageUtil.sendMessage(agm);
 				}
 			} catch (NumberFormatException e) {

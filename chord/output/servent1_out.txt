@@ -1,23 +1,21 @@
-00:14:30 - Starting servent [48|localhost|1200]
-00:14:30 - Pausing for 40000 ms
-00:14:31 - Sending message [48|1200|0||NEW_NODE|1100|28]
-00:14:33 - Got message [28|1100|0||WELCOME|1200|48]
-00:14:33 - Sending message [48|1200|1||UPDATE|1100|28]
-00:14:35 - Got message [48|1200|1|1100|UPDATE|1200|48]
-00:14:45 - Got message [4|1300|3|1100|UPDATE|1200|48]
-00:14:45 - Sending message [4|1300|2|1100,1200|UPDATE|1300|4]
-00:14:53 - Got message [24|1400|5|1100|UPDATE|1200|48]
-00:14:54 - Sending message [24|1400|3|1100,1200|UPDATE|1300|4]
-00:15:02 - Got message [0|1600|6||NEW_NODE|1200|48]
-00:15:03 - Sending message [0|1600|4||NEW_NODE|1300|4]
-00:15:08 - Got message [0|1600|7|1300,1400,1100|UPDATE|1200|48]
-00:15:09 - Sending message [0|1600|5|1300,1400,1100,1200|UPDATE|1600|0]
-00:15:10 - Pausing for 5000 ms
-00:15:11 - Got message [28|1100|8|2:5|PUT|1200|48]
-00:15:12 - Sending message [48|1200|6|2:5|PUT|1600|0]
-00:15:15 - Please wait...
-00:15:15 - Pausing for 5000 ms
-00:15:16 - Sending message [48|1200|7|2|ASK_GET|1600|0]
-00:15:18 - Got message [4|1300|5|2:5|TELL_GET|1200|48]
-00:15:18 - 2:5
-00:15:20 - Stopping...
+22:50:01 - Starting servent [48|localhost|1200|null]
+22:50:01 - Pausing for 40000 ms
+22:50:03 - Sending message [48|1200|0||NEW_NODE|1100|28]
+22:50:03 - Got message [28|1100|0||WELCOME|1200|48]
+22:50:04 - Sending message [48|1200|1||UPDATE|1100|28]
+22:50:05 - Got message [48|1200|1|1100|UPDATE|1200|48]
+22:50:16 - Got message [4|1300|3|1100|UPDATE|1200|48]
+22:50:17 - Sending message [4|1300|2|1100,1200|UPDATE|1300|4]
+22:50:26 - Got message [24|1400|5|1100|UPDATE|1200|48]
+22:50:27 - Sending message [24|1400|3|1100,1200|UPDATE|1300|4]
+22:50:38 - Got message [0|1600|6|1300,1400,1100|UPDATE|1200|48]
+22:50:39 - Sending message [0|1600|4|1300,1400,1100,1200|UPDATE|1600|0]
+22:50:41 - Pausing for 5000 ms
+22:50:42 - Got message [28|1100|7|2:5|PUT|1200|48]
+22:50:43 - Sending message [48|1200|5|2:5|PUT|1600|0]
+22:50:46 - Please wait...
+22:50:46 - Pausing for 5000 ms
+22:50:47 - Sending message [48|1200|6|2|ASK_GET|1600|0]
+22:50:49 - Got message [4|1300|5|2:5|TELL_GET|1200|48]
+22:50:49 - 2:5
+22:50:51 - Stopping...

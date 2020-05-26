@@ -22,7 +22,8 @@ public class WelcomeHandler implements MessageHandler {
 			
 			AppConfig.chordState.init(welcomeMsg);
 			
-			UpdateMessage um = new UpdateMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getNextNodePort(), "");
+			UpdateMessage um = new UpdateMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getNextNodePort(),
+					AppConfig.myServentInfo.getIpAddress(), AppConfig.chordState.getNextNodeIpAddress(), "");
 			MessageUtil.sendMessage(um);
 			
 		} else {

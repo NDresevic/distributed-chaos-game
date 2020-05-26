@@ -1,5 +1,6 @@
 package app;
 
+import app.models.Job;
 import cli.CLIParser;
 import servent.SimpleServentListener;
 
@@ -32,7 +33,7 @@ public class ServentMain {
 			System.exit(0);
 		}
 		
-		AppConfig.readConfig(serventListFile, serventId);
+		AppConfig.readServentConfig(serventListFile, serventId);
 		
 		try {
 			portNumber = AppConfig.myServentInfo.getListenerPort();
@@ -46,6 +47,12 @@ public class ServentMain {
 		}
 		
 		AppConfig.timestampedStandardPrint("Starting servent " + AppConfig.myServentInfo);
+		if (AppConfig.myServentInfo.getJobs().size() > 0) {
+			AppConfig.timestampedStandardPrint("Servent jobs:");
+		}
+		for (Job job: AppConfig.myServentInfo.getJobs()) {
+			AppConfig.timestampedStandardPrint(job.toString());
+		}
 		
 		SimpleServentListener simpleListener = new SimpleServentListener();
 		Thread listenerThread = new Thread(simpleListener);
