@@ -1,7 +1,10 @@
 package app.models;
 
-public class Point {
+import java.io.Serializable;
 
+public class Point implements Serializable {
+
+    private static final long serialVersionUID = -5794950106921201804L;
     private final int x;
     private final int y;
 
@@ -20,6 +23,9 @@ public class Point {
 
     @Override
     public String toString() {
-        return "(" + x + ", " + y + ")";
+        return "Point{" +
+                "x=" + x +
+                ", y=" + y +
+                '}';
     }
 }

@@ -19,9 +19,11 @@ public class ServentInfo implements Serializable {
 	private int weakFailureLimit;
 	private int strongFailureLimit;
 	private List<Job> jobs;
+	private boolean idle;
 
 	private final int chordId;
 	private String fractalId;
+	private int id;
 	
 	public ServentInfo(String ipAddress, int listenerPort) {
 		this.ipAddress = ipAddress;
@@ -29,7 +31,10 @@ public class ServentInfo implements Serializable {
 		this.weakFailureLimit = 1000;
 		this.strongFailureLimit = 1000;
 		this.jobs = new ArrayList<>();
+		this.idle = true;
+
 		this.chordId = ChordState.chordHash(listenerPort);
+		this.id = -1;
 	}
 
 	public String getIpAddress() {
@@ -78,9 +83,25 @@ public class ServentInfo implements Serializable {
 		}
 	}
 
+	public boolean isIdle() {
+		return idle;
+	}
+
+	public void setIdle(boolean idle) {
+		this.idle = idle;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
 	@Override
 	public String toString() {
-		return "[" + chordId + "|" + ipAddress + "|" + listenerPort + "|" + fractalId + "]";
+		return "[" + id + "|" + ipAddress + "|" + listenerPort + "|" + fractalId + "]";
 	}
 
 }

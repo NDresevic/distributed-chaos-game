@@ -1,10 +1,12 @@
 package app.models;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-public class Job {
+public class Job implements Serializable {
 
+    private static final long serialVersionUID = 2542556708692562568L;
     private final String name;
     private final int pointsCount;
     private final double proportion;
@@ -47,14 +49,14 @@ public class Job {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
-        result.append("[" + name + "|" + pointsCount + "|" + proportion + "|" + width + "|" + height + "|{");
-        for (Point point: points) {
-            result.append(point + ";");
-        }
-        result.deleteCharAt(result.length() - 1);
-        result.append("}]");
-        return result.toString();
+        return "Job{" +
+                "name='" + name + '\'' +
+                ", pointsCount=" + pointsCount +
+                ", proportion=" + proportion +
+                ", width=" + width +
+                ", height=" + height +
+                ", points=" + points +
+                '}';
     }
 
     @Override

@@ -74,16 +74,22 @@ public class BootstrapServer {
 				 */
 				if (message.equals("Hail")) {
 					int newServentPort = socketScanner.nextInt();
-					
-					System.out.println("got " + newServentPort);
+
+					AppConfig.timestampedStandardPrint("Got " + newServentPort);
 					PrintWriter socketWriter = new PrintWriter(newServentSocket.getOutputStream());
 					
 					if (activeServents.size() == 0) {
 						socketWriter.write(String.valueOf(-1) + "\n");
+						socketWriter.write(String.valueOf(-1) + "\n");
+						AppConfig.timestampedStandardPrint("Adding: " + newServentPort);
 						activeServents.add(newServentPort); //first one doesn't need to confirm
 					} else {
-						int randServent = activeServents.get(rand.nextInt(activeServents.size()));
-						socketWriter.write(String.valueOf(randServent) + "\n");
+						// send last servent port
+						int lastServent = activeServents.get(activeServents.size() - 1);
+						socketWriter.write(lastServent + "\n");
+						// send port of 0 servent
+						int fisrtServent = activeServents.get(0);
+						socketWriter.write(fisrtServent + "\n");
 					}
 					
 					socketWriter.flush();
@@ -93,15 +99,17 @@ public class BootstrapServer {
 					 * When a servent is confirmed not to be a collider, we add him to the list.
 					 */
 					int newServentPort = socketScanner.nextInt();
-					
-					System.out.println("adding " + newServentPort);
-					
+
+					AppConfig.timestampedStandardPrint("Adding: " + newServentPort);
 					activeServents.add(newServentPort);
 					newServentSocket.close();
+				} else if (message.equals("Quit")) {
+					int serventPort = socketScanner.nextInt();
+
+					AppConfig.timestampedStandardPrint("Removing: " + serventPort);
+					activeServents.remove((Integer) serventPort);
+					newServentSocket.close();
 				}
-				
-			} catch (SocketTimeoutException e) {
-				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

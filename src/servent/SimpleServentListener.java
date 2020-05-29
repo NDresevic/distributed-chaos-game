@@ -9,15 +9,7 @@ import java.util.concurrent.Executors;
 
 import app.AppConfig;
 import app.Cancellable;
-import servent.handler.AskGetHandler;
-import servent.handler.MessageHandler;
-import servent.handler.NewNodeHandler;
-import servent.handler.NullHandler;
-import servent.handler.PutHandler;
-import servent.handler.SorryHandler;
-import servent.handler.TellGetHandler;
-import servent.handler.UpdateHandler;
-import servent.handler.WelcomeHandler;
+import servent.handler.*;
 import servent.message.Message;
 import servent.message.util.MessageUtil;
 
@@ -59,7 +51,7 @@ public class SimpleServentListener implements Runnable, Cancellable {
 				clientMessage = MessageUtil.readMessage(clientSocket);
 				
 				MessageHandler messageHandler = new NullHandler(clientMessage);
-				
+
 				/*
 				 * Each message type has it's own handler.
 				 * If we can get away with stateless handlers, we will,
@@ -88,6 +80,9 @@ public class SimpleServentListener implements Runnable, Cancellable {
 					messageHandler = new TellGetHandler(clientMessage);
 					break;
 				case POISON:
+					break;
+				case QUIT:
+					messageHandler = new QuitHandler(clientMessage);
 					break;
 				}
 				

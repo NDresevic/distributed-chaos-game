@@ -111,9 +111,9 @@ public class BasicMessage implements Message {
 	 */
 	@Override
 	public String toString() {
-		return "[" + ChordState.chordHash(getSenderPort()) + "|" + getSenderIpAddress() + "|" + getSenderPort() +
+		return "[" + getSenderPort() + "|" + getSenderIpAddress() + "|" + getSenderPort() +
 				"|" + getMessageId() + "|" + getMessageText() + "|" + getMessageType() +
 				"|" + getReceiverIpAddress() + "|" + getReceiverPort() +
-				"|" + ChordState.chordHash(getReceiverPort()) + "]";
+				"|" + getReceiverPort() + "]";
 	}
 }

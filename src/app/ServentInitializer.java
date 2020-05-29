@@ -11,11 +11,12 @@ import servent.message.util.MessageUtil;
 
 public class ServentInitializer implements Runnable {
 
-	private int getSomeServentPort() {
+	private String getLastAndFirstServentPort() {
 		int bsPort = AppConfig.BOOTSTRAP_PORT;
 		String bsIpAddress = AppConfig.BOOTSTRAP_IP_ADDRESS;
 		
-		int retVal = -2;
+		int lastServentPort = -2;
+		int firstServentPort = -2;
 		
 		try {
 			Socket bsSocket = new Socket(bsIpAddress, bsPort);
@@ -23,33 +24,37 @@ public class ServentInitializer implements Runnable {
 			PrintWriter bsWriter = new PrintWriter(bsSocket.getOutputStream());
 			bsWriter.write("Hail\n" + AppConfig.myServentInfo.getListenerPort() + "\n");
 			bsWriter.flush();
-			
+
 			Scanner bsScanner = new Scanner(bsSocket.getInputStream());
-			retVal = bsScanner.nextInt();
-			
+			lastServentPort = bsScanner.nextInt();
+			firstServentPort = bsScanner.nextInt();
+
 			bsSocket.close();
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		return retVal;
+
+		return lastServentPort + " " + firstServentPort;
 	}
 	
 	@Override
 	public void run() {
-		int someServentPort = getSomeServentPort();
+		int lastServentPort = Integer.parseInt(getLastAndFirstServentPort().split(" ")[0]);
+		int firstServentPort = Integer.parseInt(getLastAndFirstServentPort().split(" ")[1]);
 		
-		if (someServentPort == -2) {
+		if (lastServentPort == -2) {
 			AppConfig.timestampedErrorPrint("Error in contacting bootstrap. Exiting...");
 			System.exit(0);
 		}
-		if (someServentPort == -1) { //bootstrap gave us -1 -> we are first
+//		AppConfig.timestampedStandardPrint(lastServentPort + " " + firstServentPort);
+		if (lastServentPort == -1) { //bootstrap gave us -1 -> we are first
+			AppConfig.myServentInfo.setId(0);
 			AppConfig.timestampedStandardPrint("First node in Chord system.");
 		} else { //bootstrap gave us something else - let that node tell our successor that we are here
-			NewNodeMessage nnm = new NewNodeMessage(AppConfig.myServentInfo.getListenerPort(), someServentPort,
-					AppConfig.myServentInfo.getIpAddress(), "localhost");
+			NewNodeMessage nnm = new NewNodeMessage(AppConfig.myServentInfo.getListenerPort(), lastServentPort,
+					AppConfig.myServentInfo.getIpAddress(), "localhost", firstServentPort);
 			MessageUtil.sendMessage(nnm);
 		}
 	}

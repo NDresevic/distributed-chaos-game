@@ -23,84 +23,92 @@ public class NewNodeHandler implements MessageHandler {
 	
 	@Override
 	public void run() {
-		if (clientMessage.getMessageType() == MessageType.NEW_NODE) {
-			int newNodePort = clientMessage.getSenderPort();
-			String newNodeIpAddress = clientMessage.getSenderIpAddress();
-			ServentInfo newNodeInfo = new ServentInfo(newNodeIpAddress, newNodePort);
-			
-			//check if the new node collides with another existing node.
-			if (AppConfig.chordState.isCollision(newNodeInfo.getChordId())) {
-				Message sry = new SorryMessage(AppConfig.myServentInfo.getListenerPort(), clientMessage.getSenderPort(),
-						clientMessage.getSenderIpAddress(), clientMessage.getReceiverIpAddress());
-				MessageUtil.sendMessage(sry);
-				return;
-			}
-			
-			//check if he is my predecessor
-			boolean isMyPred = AppConfig.chordState.isKeyMine(newNodeInfo.getChordId());
-			if (isMyPred) { //if yes, prepare and send welcome message
-				ServentInfo hisPred = AppConfig.chordState.getPredecessor();
-				if (hisPred == null) {
-					hisPred = AppConfig.myServentInfo;
-				}
-				
-				AppConfig.chordState.setPredecessor(newNodeInfo);
-				
-				Map<Integer, Integer> myValues = AppConfig.chordState.getValueMap();
-				Map<Integer, Integer> hisValues = new HashMap<>();
-				
-				int myId = AppConfig.myServentInfo.getChordId();
-				int hisPredId = hisPred.getChordId();
-				int newNodeId = newNodeInfo.getChordId();
-				
-				for (Entry<Integer, Integer> valueEntry : myValues.entrySet()) {
-					if (hisPredId == myId) { //i am first and he is second
-						if (myId < newNodeId) {
-							if (valueEntry.getKey() <= newNodeId && valueEntry.getKey() > myId) {
-								hisValues.put(valueEntry.getKey(), valueEntry.getValue());
-							}
-						} else {
-							if (valueEntry.getKey() <= newNodeId || valueEntry.getKey() > myId) {
-								hisValues.put(valueEntry.getKey(), valueEntry.getValue());
-							}
-						}
-					}
-					if (hisPredId < myId) { //my old predecesor was before me
-						if (valueEntry.getKey() <= newNodeId) {
-							hisValues.put(valueEntry.getKey(), valueEntry.getValue());
-						}
-					} else { //my old predecesor was after me
-						if (hisPredId > newNodeId) { //new node overflow
-							if (valueEntry.getKey() <= newNodeId || valueEntry.getKey() > hisPredId) {
-								hisValues.put(valueEntry.getKey(), valueEntry.getValue());
-							}
-						} else { //no new node overflow
-							if (valueEntry.getKey() <= newNodeId && valueEntry.getKey() > hisPredId) {
-								hisValues.put(valueEntry.getKey(), valueEntry.getValue());
-							}
-						}
-						
-					}
-					
-				}
-				for (Integer key : hisValues.keySet()) { //remove his values from my map
-					myValues.remove(key);
-				}
-				AppConfig.chordState.setValueMap(myValues);
-				
-				WelcomeMessage wm = new WelcomeMessage(AppConfig.myServentInfo.getListenerPort(), newNodePort,
-						AppConfig.myServentInfo.getIpAddress(), newNodeIpAddress, hisValues);
-				MessageUtil.sendMessage(wm);
-			} else { //if he is not my predecessor, let someone else take care of it
-				ServentInfo nextNode = AppConfig.chordState.getNextNodeForKey(newNodeInfo.getChordId());
-				NewNodeMessage nnm = new NewNodeMessage(newNodePort, nextNode.getListenerPort(),
-						newNodeIpAddress, nextNode.getIpAddress());
-				MessageUtil.sendMessage(nnm);
-			}
-			
-		} else {
+		if (clientMessage.getMessageType() != MessageType.NEW_NODE) {
 			AppConfig.timestampedErrorPrint("NEW_NODE handler got something that is not new node message.");
+			return;
 		}
+
+		NewNodeMessage newNodeMessage = (NewNodeMessage) clientMessage;
+		int newNodePort = newNodeMessage.getSenderPort();
+		String newNodeIpAddress = newNodeMessage.getSenderIpAddress();
+		int firstServentPort = newNodeMessage.getFirstServentPort();
+//		ServentInfo newNodeInfo = new ServentInfo(newNodeIpAddress, newNodePort);
+
+		int hisId = AppConfig.myServentInfo.getId() + 1;
+		Map<Integer, Integer> hisValues = new HashMap<>();
+		WelcomeMessage wm = new WelcomeMessage(AppConfig.myServentInfo.getListenerPort(), newNodePort,
+				AppConfig.myServentInfo.getIpAddress(), newNodeIpAddress, hisId, firstServentPort, hisValues);
+		MessageUtil.sendMessage(wm);
+
+//		//check if the new node collides with another existing node.
+//		if (AppConfig.chordState.isCollision(newNodeInfo.getChordId())) {
+//			Message sry = new SorryMessage(AppConfig.myServentInfo.getListenerPort(), clientMessage.getSenderPort(),
+//					clientMessage.getSenderIpAddress(), clientMessage.getReceiverIpAddress());
+//			MessageUtil.sendMessage(sry);
+//			return;
+//		}
+//
+//		//check if he is my predecessor
+//		boolean isMyPred = AppConfig.chordState.isKeyMine(newNodeInfo.getChordId());
+//		if (isMyPred) { //if yes, prepare and send welcome message
+//			ServentInfo hisPred = AppConfig.chordState.getPredecessor();
+//			if (hisPred == null) {
+//				hisPred = AppConfig.myServentInfo;
+//			}
+//
+//			AppConfig.chordState.setPredecessor(newNodeInfo);
+//
+//			Map<Integer, Integer> myValues = AppConfig.chordState.getValueMap();
+//			Map<Integer, Integer> hisValues = new HashMap<>();
+//
+//			int myId = AppConfig.myServentInfo.getChordId();
+//			int hisPredId = hisPred.getChordId();
+//			int newNodeId = newNodeInfo.getChordId();
+//
+//			for (Entry<Integer, Integer> valueEntry : myValues.entrySet()) {
+//				if (hisPredId == myId) { //i am first and he is second
+//					if (myId < newNodeId) {
+//						if (valueEntry.getKey() <= newNodeId && valueEntry.getKey() > myId) {
+//							hisValues.put(valueEntry.getKey(), valueEntry.getValue());
+//						}
+//					} else {
+//						if (valueEntry.getKey() <= newNodeId || valueEntry.getKey() > myId) {
+//							hisValues.put(valueEntry.getKey(), valueEntry.getValue());
+//						}
+//					}
+//				}
+//				if (hisPredId < myId) { //my old predecesor was before me
+//					if (valueEntry.getKey() <= newNodeId) {
+//						hisValues.put(valueEntry.getKey(), valueEntry.getValue());
+//					}
+//				} else { //my old predecesor was after me
+//					if (hisPredId > newNodeId) { //new node overflow
+//						if (valueEntry.getKey() <= newNodeId || valueEntry.getKey() > hisPredId) {
+//							hisValues.put(valueEntry.getKey(), valueEntry.getValue());
+//						}
+//					} else { //no new node overflow
+//						if (valueEntry.getKey() <= newNodeId && valueEntry.getKey() > hisPredId) {
+//							hisValues.put(valueEntry.getKey(), valueEntry.getValue());
+//						}
+//					}
+//
+//				}
+//
+//			}
+//			for (Integer key : hisValues.keySet()) { //remove his values from my map
+//				myValues.remove(key);
+//			}
+//			AppConfig.chordState.setValueMap(myValues);
+//
+//			WelcomeMessage wm = new WelcomeMessage(AppConfig.myServentInfo.getListenerPort(), newNodePort,
+//					AppConfig.myServentInfo.getIpAddress(), newNodeIpAddress, hisValues);
+//			MessageUtil.sendMessage(wm);
+//		} else { //if he is not my predecessor, let someone else take care of it
+//			ServentInfo nextNode = AppConfig.chordState.getNextNodeForKey(newNodeInfo.getChordId());
+//			NewNodeMessage nnm = new NewNodeMessage(newNodePort, nextNode.getListenerPort(),
+//					newNodeIpAddress, nextNode.getIpAddress());
+//			MessageUtil.sendMessage(nnm);
+//		}
 
 	}
 

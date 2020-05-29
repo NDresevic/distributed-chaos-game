@@ -132,6 +132,7 @@ public class AppConfig {
 			System.exit(0);
 		}
 
+		// TODO: dodati da je lista poslova
 		String jobName = properties.getProperty("job_name");
 		if (jobName == null) {
 			return;
