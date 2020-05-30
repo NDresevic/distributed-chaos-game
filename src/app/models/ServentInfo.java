@@ -24,7 +24,7 @@ public class ServentInfo implements Serializable {
 	private final int chordId;
 	private String fractalId;
 	private int id;
-	
+
 	public ServentInfo(String ipAddress, int listenerPort) {
 		this.ipAddress = ipAddress;
 		this.listenerPort = listenerPort;

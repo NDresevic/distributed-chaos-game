@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import app.models.FractalIdJob;
+import app.models.JobExecution;
 import app.models.ServentInfo;
 import servent.message.AskGetMessage;
 import servent.message.PutMessage;
@@ -53,7 +52,13 @@ public class ChordState {
 	
 	//we DO NOT use this to send messages, but only to construct the successor table
 	private HashMap<Integer, ServentInfo> allNodeIdInfoMap;
-	
+
+	private List<JobExecution> jobExecutionList;
+
+	// [id -> fractalId + job]
+	private Map<Integer, FractalIdJob> serventJobs;
+	private int activeJobsCount = 0;
+
 	private Map<Integer, Integer> valueMap;
 	
 	public ChordState() {
@@ -75,6 +80,8 @@ public class ChordState {
 		predecessorInfo = null;
 		valueMap = new HashMap<>();
 		allNodeIdInfoMap = new HashMap<>();
+		this.jobExecutionList = new ArrayList<>();
+		this.serventJobs = new HashMap<>();
 	}
 	
 	/**
@@ -195,59 +202,6 @@ public class ChordState {
 		return successorTable[0];
 	}
 
-//	private void updateSuccessorTable() {
-//		//first node after me has to be successorTable[0]
-//
-//		int currentNodeIndex = 0;
-//		ServentInfo currentNode = allNodeInfo.get(currentNodeIndex);
-//		successorTable[0] = currentNode;
-//
-//		int currentIncrement = 2;
-//
-//		ServentInfo previousNode = AppConfig.myServentInfo;
-//
-//		//i is successorTable index
-//		for(int i = 1; i < chordLevel; i++, currentIncrement *= 2) {
-//			//we are looking for the node that has larger chordId than this
-//			int currentValue = (AppConfig.myServentInfo.getChordId() + currentIncrement) % CHORD_SIZE;
-//
-//			int currentId = currentNode.getChordId();
-//			int previousId = previousNode.getChordId();
-//
-//			//this loop needs to skip all nodes that have smaller chordId than currentValue
-//			while (true) {
-//				if (currentValue > currentId) {
-//					//before skipping, check for overflow
-//					if (currentId > previousId || currentValue < previousId) {
-//						//try same value with the next node
-//						previousId = currentId;
-//						currentNodeIndex = (currentNodeIndex + 1) % allNodeInfo.size();
-//						currentNode = allNodeInfo.get(currentNodeIndex);
-//						currentId = currentNode.getChordId();
-//					} else {
-//						successorTable[i] = currentNode;
-//						break;
-//					}
-//				} else { //node id is larger
-//					ServentInfo nextNode = allNodeInfo.get((currentNodeIndex + 1) % allNodeInfo.size());
-//					int nextNodeId = nextNode.getChordId();
-//					//check for overflow
-//					if (nextNodeId < currentId && currentValue <= nextNodeId) {
-//						//try same value with the next node
-//						previousId = currentId;
-//						currentNodeIndex = (currentNodeIndex + 1) % allNodeInfo.size();
-//						currentNode = allNodeInfo.get(currentNodeIndex);
-//						currentId = currentNode.getChordId();
-//					} else {
-//						successorTable[i] = currentNode;
-//						break;
-//					}
-//				}
-//			}
-//		}
-//
-//	}
-
 	private void calculateChordLevel() {
 		this.chordLevel = 1;
 		int tmp = allNodeIdInfoMap.size();
@@ -294,49 +248,10 @@ public class ChordState {
 			allNodeIdInfoMap.put(entry.getKey(), entry.getValue());
 		}
 
+		//todo: sort po kljucevima ovde?
+
 		updateSuccessorTable();
 	}
-
-	/**
-	 * This method constructs an ordered list of all nodes. They are ordered by chordId, starting from this node.
-	 * Once the list is created, we invoke <code>updateSuccessorTable()</code> to do the rest of the work.
-	 * 
-	 */
-//	public void addNodes(List<ServentInfo> newNodes) {
-//		allNodeInfo.addAll(newNodes);
-//
-//		allNodeInfo.sort(new Comparator<ServentInfo>() {
-//
-//			@Override
-//			public int compare(ServentInfo o1, ServentInfo o2) {
-//				return o1.getChordId() - o2.getChordId();
-//			}
-//
-//		});
-//
-//		List<ServentInfo> newList = new ArrayList<>();
-//		List<ServentInfo> newList2 = new ArrayList<>();
-//
-//		int myId = AppConfig.myServentInfo.getChordId();
-//		for (ServentInfo serventInfo : allNodeInfo) {
-//			if (serventInfo.getChordId() < myId) {
-//				newList2.add(serventInfo);
-//			} else {
-//				newList.add(serventInfo);
-//			}
-//		}
-//
-//		allNodeInfo.clear();
-//		allNodeInfo.addAll(newList);
-//		allNodeInfo.addAll(newList2);
-//		if (newList2.size() > 0) {
-//			predecessorInfo = newList2.get(newList2.size()-1);
-//		} else {
-//			predecessorInfo = newList.get(newList.size()-1);
-//		}
-//
-//		updateSuccessorTable();
-//	}
 
 	/**
 	 * The Chord put operation. Stores locally if key is ours, otherwise sends it on.
@@ -379,5 +294,29 @@ public class ChordState {
 
 	public HashMap<Integer, ServentInfo> getAllNodeIdInfoMap() {
 		return allNodeIdInfoMap;
+	}
+
+	public List<JobExecution> getJobExecutionList() { return jobExecutionList; }
+
+	public Map<Integer, FractalIdJob> getServentJobs() {
+		return serventJobs;
+	}
+
+	public int getActiveJobsCount() {
+		return activeJobsCount;
+	}
+
+	public void setServentJobs(Map<Integer, FractalIdJob> serventJobs) {
+		this.serventJobs = serventJobs;
+	}
+
+	public int getIdForFractalIDAndJob(String fractalId, String jobName) {
+		FractalIdJob fractalIdJob = new FractalIdJob(fractalId, jobName);
+		for (Map.Entry<Integer, FractalIdJob> entry: serventJobs.entrySet()) {
+			if (entry.getValue().equals(fractalIdJob)) {
+				return entry.getKey();
+			}
+		}
+		return -1;
 	}
 }
