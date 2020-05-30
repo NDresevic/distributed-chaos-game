@@ -32,7 +32,20 @@ public class JobExecution implements Runnable {
         AppConfig.timestampedStandardPrint("Computing points...");
         while (working) {
             computedPoints.add(computeNewPoint());
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     public List<Point> getComputedPoints() { return computedPoints; }
@@ -59,8 +72,8 @@ public class JobExecution implements Runnable {
 
         Point lastPoint = computedPoints.get(computedPoints.size() - 1);
         Point randomPoint = getRandomStartPoint();
-        int newX = (int) (lastPoint.getX() + proportion * (randomPoint.getX() - lastPoint.getX()));
-        int newY = (int) (lastPoint.getY() + proportion * (randomPoint.getY() - lastPoint.getY()));
+        int newX = (int) (randomPoint.getX() + proportion * (lastPoint.getX() - randomPoint.getX()));
+        int newY = (int) (randomPoint.getY() + proportion * (lastPoint.getY() - randomPoint.getY()));
         return new Point(newX, newY);
     }
 }

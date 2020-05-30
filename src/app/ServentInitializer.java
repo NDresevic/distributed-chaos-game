@@ -41,8 +41,9 @@ public class ServentInitializer implements Runnable {
 	
 	@Override
 	public void run() {
-		int lastServentPort = Integer.parseInt(getLastAndFirstServentPort().split(" ")[0]);
-		int firstServentPort = Integer.parseInt(getLastAndFirstServentPort().split(" ")[1]);
+		String ports = getLastAndFirstServentPort();
+		int lastServentPort = Integer.parseInt(ports.split(" ")[0]);
+		int firstServentPort = Integer.parseInt(ports.split(" ")[1]);
 		
 		if (lastServentPort == -2) {
 			AppConfig.timestampedErrorPrint("Error in contacting bootstrap. Exiting...");

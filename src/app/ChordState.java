@@ -319,4 +319,22 @@ public class ChordState {
 		}
 		return -1;
 	}
+
+	private List<Integer> getAllIdsForJob(String jobName) {
+		List<Integer> ids = new ArrayList<>();
+		for (Map.Entry<Integer, FractalIdJob> entry: serventJobs.entrySet()) {
+			if (entry.getValue().getJobName().equals(jobName)) {
+				ids.add(entry.getKey());
+			}
+		}
+		return ids;
+	}
+
+	public int getFirstIdForJob(String jobName) {
+		return Collections.min(getAllIdsForJob(jobName));
+	}
+
+	public int getLastIdForJob(String jobName) {
+		return Collections.max(getAllIdsForJob(jobName));
+	}
 }

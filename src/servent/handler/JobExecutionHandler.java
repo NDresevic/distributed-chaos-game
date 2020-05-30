@@ -25,6 +25,7 @@ public class JobExecutionHandler implements MessageHandler {
     public void run() {
         if (clientMessage.getMessageType() != MessageType.JOB_EXECUTION) {
             AppConfig.timestampedErrorPrint("Job execution handler got a message that is not JOB_EXECUTION");
+            return;
         }
 
         JobExecutionMessage jobExecutionMessage = (JobExecutionMessage) clientMessage;

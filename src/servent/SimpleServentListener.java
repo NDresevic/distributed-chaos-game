@@ -87,6 +87,9 @@ public class SimpleServentListener implements Runnable, Cancellable {
 				case JOB_EXECUTION:
 					messageHandler = new JobExecutionHandler(clientMessage);
 					break;
+				case ASK_JOB_RESULT:
+					messageHandler = new AskJobResultHandler(clientMessage);
+					break;
 				case JOB_RESULT:
 					messageHandler = new JobResultHandler(clientMessage);
 					break;
