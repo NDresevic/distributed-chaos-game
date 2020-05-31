@@ -149,6 +149,12 @@ public class StartCommand implements CLICommand {
         int length = 0;
         String base = "";
 
+        // if only one node is executing the job, no need to split fractalIds
+        if (nodesCount == 1) {
+            fractalIds.add("0");
+            return fractalIds;
+        }
+
         while (nodesCount > 0) {
             if (length >= 1) {
                 boolean hasLength = false;

@@ -7,6 +7,7 @@ import java.util.Objects;
 public class Job implements Serializable {
 
     private static final long serialVersionUID = 2542556708692562568L;
+
     private final String name;
     private final int pointsCount;
     private final double proportion;

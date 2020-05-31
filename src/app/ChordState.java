@@ -53,7 +53,7 @@ public class ChordState {
 	//we DO NOT use this to send messages, but only to construct the successor table
 	private HashMap<Integer, ServentInfo> allNodeIdInfoMap;
 
-	private List<JobExecution> jobExecutionList;
+	private JobExecution executionJob;
 
 	// [id -> fractalId + job]
 	private Map<Integer, FractalIdJob> serventJobs;
@@ -80,7 +80,6 @@ public class ChordState {
 		predecessorInfo = null;
 		valueMap = new HashMap<>();
 		allNodeIdInfoMap = new HashMap<>();
-		this.jobExecutionList = new ArrayList<>();
 		this.serventJobs = new HashMap<>();
 	}
 	
@@ -296,7 +295,13 @@ public class ChordState {
 		return allNodeIdInfoMap;
 	}
 
-	public List<JobExecution> getJobExecutionList() { return jobExecutionList; }
+	public JobExecution getExecutionJob() {
+		return executionJob;
+	}
+
+	public void setExecutionJob(JobExecution executionJob) {
+		this.executionJob = executionJob;
+	}
 
 	public Map<Integer, FractalIdJob> getServentJobs() {
 		return serventJobs;

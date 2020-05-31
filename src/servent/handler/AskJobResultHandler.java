@@ -31,18 +31,19 @@ public class AskJobResultHandler implements MessageHandler {
         String jobName = askJobResultMessage.getJobName();
 
         // add my points
-        List<Point> myComputedPoints = AppConfig.chordState.getJobExecutionList().get(0).getComputedPoints();
+        List<Point> myComputedPoints = AppConfig.chordState.getExecutionJob().getComputedPoints();
         AppConfig.timestampedStandardPrint("Tacke " + myComputedPoints);
         receivedComputedPoints.addAll(myComputedPoints);
         if (AppConfig.myServentInfo.getId() == lastServentId) {
             // send result to the node which requested it
-            int width = AppConfig.chordState.getJobExecutionList().get(0).getWidth();
-            int height = AppConfig.chordState.getJobExecutionList().get(0).getHeight();
+            int width = AppConfig.chordState.getExecutionJob().getWidth();
+            int height = AppConfig.chordState.getExecutionJob().getHeight();
+            double proportion = AppConfig.chordState.getExecutionJob().getProportion();
 
             // todo: popravi slanje vise
             JobResultMessage jobResultMessage = new JobResultMessage(AppConfig.myServentInfo.getListenerPort(),
                     clientMessage.getSenderPort(), AppConfig.myServentInfo.getIpAddress(),
-                    clientMessage.getSenderIpAddress(), jobName, receivedComputedPoints, width, height);
+                    clientMessage.getSenderIpAddress(), jobName, receivedComputedPoints, width, height, proportion);
             MessageUtil.sendMessage(jobResultMessage);
         } else {
             // send to first successor

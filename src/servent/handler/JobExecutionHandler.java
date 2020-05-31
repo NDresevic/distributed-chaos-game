@@ -38,9 +38,9 @@ public class JobExecutionHandler implements MessageHandler {
         Job job = jobExecutionMessage.getJob();
         // no further splitting, job execution can start
         if (fractalIds.size() == 1) {
-            JobExecution jobExecution = new JobExecution(job.getName(), job.getProportion(), job.getWidth(),
-                    job.getHeight(), pointList);
-            AppConfig.chordState.getJobExecutionList().add(jobExecution);
+            JobExecution jobExecution = new JobExecution(job.getName(), fractalIds.get(0), job.getProportion(),
+                    job.getWidth(), job.getHeight(), pointList);
+            AppConfig.chordState.setExecutionJob(jobExecution);
             Thread t = new Thread(jobExecution);
             t.start();
             return;
@@ -82,7 +82,7 @@ public class JobExecutionHandler implements MessageHandler {
             // send to one node partialFractalIds, regionPoints and job
             JobExecutionMessage jem = new JobExecutionMessage(AppConfig.myServentInfo.getListenerPort(),
                     executorServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(), executorServent.getIpAddress(),
-                    partialFractalIds, regionPoints, job, AppConfig.chordState.getServentJobs(), 0);
+                    partialFractalIds, regionPoints, job, AppConfig.chordState.getServentJobs(), level);
             MessageUtil.sendMessage(jem);
         }
     }

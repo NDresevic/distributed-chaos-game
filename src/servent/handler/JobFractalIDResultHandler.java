@@ -2,6 +2,7 @@ package servent.handler;
 
 import app.AppConfig;
 import app.models.Point;
+import servent.message.JobFractalIDResultMessage;
 import servent.message.JobResultMessage;
 import servent.message.Message;
 import servent.message.MessageType;
@@ -13,27 +14,28 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public class JobResultHandler implements MessageHandler {
+public class JobFractalIDResultHandler implements MessageHandler {
 
     private Message clientMessage;
 
-    public JobResultHandler(Message clientMessage) {
+    public JobFractalIDResultHandler(Message clientMessage) {
         this.clientMessage = clientMessage;
     }
 
     @Override
     public void run() {
-        if (clientMessage.getMessageType() != MessageType.JOB_RESULT) {
-            AppConfig.timestampedErrorPrint("Job result handler got a message that is not JOB_RESULT");
+        if (clientMessage.getMessageType() != MessageType.JOB_FRACTALID_RESULT) {
+            AppConfig.timestampedErrorPrint("Job fractalID result handler got a message that is not JOB_FRACTALID_RESULT");
             return;
         }
 
-        JobResultMessage jobResultMessage = (JobResultMessage) clientMessage;
-        List<Point> resultPoints = jobResultMessage.getComputedPoints();
-        String jobName = jobResultMessage.getJobName();
-        int width = jobResultMessage.getWidth();
-        int height = jobResultMessage.getHeight();
-        double proportion = jobResultMessage.getProportion();
+        JobFractalIDResultMessage resultMessage = (JobFractalIDResultMessage) clientMessage;
+        List<Point> resultPoints = resultMessage.getComputedPoints();
+        String jobName = resultMessage.getJobName();
+        String fractalId = resultMessage.getFractalId();
+        int width = resultMessage.getWidth();
+        int height = resultMessage.getHeight();
+        double proportion = resultMessage.getProportion();
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
         WritableRaster writableRaster = image.getRaster();
@@ -46,7 +48,7 @@ public class JobResultHandler implements MessageHandler {
                 BufferedImage.TYPE_3BYTE_BGR);
         newImage.setData(writableRaster);
         try {
-            ImageIO.write(newImage, "PNG", new File("fractals/" + jobName + "_" + proportion + ".png"));
+            ImageIO.write(newImage, "PNG", new File("fractals/" + jobName + fractalId + "_" + proportion + ".png"));
         } catch (IOException e) {
             e.printStackTrace();
         }

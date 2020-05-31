@@ -2,7 +2,9 @@ package cli.command;
 
 import app.AppConfig;
 import app.models.ServentInfo;
+import servent.message.AskJobFractalIDResultMessage;
 import servent.message.AskJobResultMessage;
+import servent.message.Message;
 import servent.message.util.MessageUtil;
 
 public class ResultCommand implements CLICommand {
@@ -21,8 +23,8 @@ public class ResultCommand implements CLICommand {
             fractalId = args.split(" ")[1];
         }
 
+        // get result for whole job
         if (fractalId == null) {
-            // za posao samo ceo result
             AppConfig.timestampedStandardPrint("Collecting computed points for job \"" + jobName + "\"...");
 
             int firstServentId = AppConfig.chordState.getFirstIdForJob(jobName);
@@ -35,9 +37,22 @@ public class ResultCommand implements CLICommand {
                     AppConfig.myServentInfo.getIpAddress(),
                     firstServent.getIpAddress(), jobName, lastServentId);
             MessageUtil.sendMessage(askJobResultMessage);
-        } else {
-            //todo: posao samo za taj fractalId
+        }
+        // get result for specific job and fractalId
+        else {
+            int executorId = AppConfig.chordState.getIdForFractalIDAndJob(fractalId, jobName);
+            ServentInfo executorServent = AppConfig.chordState.getAllNodeIdInfoMap().get(executorId);
+            // todo: fix sending
+            AskJobFractalIDResultMessage message = new AskJobFractalIDResultMessage(
+                    AppConfig.myServentInfo.getListenerPort(),
+                    executorServent.getListenerPort(),
+                    AppConfig.myServentInfo.getIpAddress(),
+                    executorServent.getIpAddress(),
+                    jobName);
+            MessageUtil.sendMessage(message);
         }
 
+
+        // todo: BUG - kad se trazi rez na istom cvoru koji je zapoceo posao, ne radi
     }
 }

@@ -1,14 +1,16 @@
 package app.models;
 
 import app.AppConfig;
+import app.Cancellable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class JobExecution implements Runnable {
+public class JobExecution implements Runnable, Cancellable {
 
-    private final String name;
+    private final String jobName;
+    private final String fractalId;
     private final double proportion;
     private final int width;
     private final int height;
@@ -17,8 +19,9 @@ public class JobExecution implements Runnable {
 
     private boolean working;
 
-    public JobExecution(String name, double proportion, int width, int height, List<Point> startingPoints) {
-        this.name = name;
+    public JobExecution(String jobName, String fractalId, double proportion, int width, int height, List<Point> startingPoints) {
+        this.jobName = jobName;
+        this.fractalId = fractalId;
         this.proportion = proportion;
         this.width = width;
         this.height = height;
@@ -40,6 +43,19 @@ public class JobExecution implements Runnable {
         }
     }
 
+    @Override
+    public void stop() {
+        this.working = false;
+    }
+
+    public String getJobName() {
+        return jobName;
+    }
+
+    public String getFractalId() {
+        return fractalId;
+    }
+
     public int getWidth() {
         return width;
     }
@@ -51,6 +67,10 @@ public class JobExecution implements Runnable {
     public List<Point> getComputedPoints() { return computedPoints; }
 
     public boolean isWorking() { return working; }
+
+    public double getProportion() {
+        return proportion;
+    }
 
     private Point getRandomStartPoint() {
         Random r = new Random();

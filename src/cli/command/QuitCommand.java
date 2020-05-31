@@ -29,12 +29,15 @@ public class QuitCommand implements CLICommand {
 
     @Override
     public void execute(String args) {
-        // inform successor so that it can delete you
-        QuitMessage quitMessage = new QuitMessage(AppConfig.myServentInfo.getListenerPort(),
-                AppConfig.chordState.getNextNodePort(),
-                AppConfig.myServentInfo.getIpAddress(),
-                AppConfig.chordState.getNextNodeIpAddress(), AppConfig.myServentInfo.getId(), AppConfig.myServentInfo.getId());
-        MessageUtil.sendMessage(quitMessage);
+        // inform successor so that it can delete you if you are not only node in the system
+        if (AppConfig.chordState.getAllNodeIdInfoMap().size() > 1) {
+            QuitMessage quitMessage = new QuitMessage(AppConfig.myServentInfo.getListenerPort(),
+                    AppConfig.chordState.getNextNodePort(),
+                    AppConfig.myServentInfo.getIpAddress(),
+                    AppConfig.chordState.getNextNodeIpAddress(), AppConfig.myServentInfo.getId(), AppConfig.myServentInfo.getId());
+            MessageUtil.sendMessage(quitMessage);
+        }
+
         // send bootstrap server quit message - to remove us from active servents
         try {
             Socket bsSocket = new Socket(AppConfig.BOOTSTRAP_IP_ADDRESS, AppConfig.BOOTSTRAP_PORT);

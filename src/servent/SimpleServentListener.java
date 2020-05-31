@@ -93,6 +93,12 @@ public class SimpleServentListener implements Runnable, Cancellable {
 				case JOB_RESULT:
 					messageHandler = new JobResultHandler(clientMessage);
 					break;
+				case ASK_JOB_FRACTALID_RESULT:
+					messageHandler = new AskJobFractalIDResultHandler(clientMessage);
+					break;
+				case JOB_FRACTALID_RESULT:
+					messageHandler = new JobFractalIDResultHandler(clientMessage);
+					break;
 				}
 				
 				threadPool.submit(messageHandler);
