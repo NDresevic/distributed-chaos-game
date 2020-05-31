@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import app.models.FractalIdJob;
+import app.models.Job;
 import app.models.JobExecution;
 import app.models.ServentInfo;
 import servent.message.AskGetMessage;
@@ -57,6 +58,7 @@ public class ChordState {
 
 	// [id -> fractalId + job]
 	private Map<Integer, FractalIdJob> serventJobs;
+	private List<Job> allJobs = new ArrayList<>();
 	private int activeJobsCount = 0;
 
 	private Map<Integer, Integer> valueMap;
@@ -225,7 +227,9 @@ public class ChordState {
 		if (allNodeIdInfoMap.get(firstSuccessorIndex) != null) {
 			firstSuccessor = allNodeIdInfoMap.get(firstSuccessorIndex);
 		} else {
-			firstSuccessor = allNodeIdInfoMap.get(0);
+			if (AppConfig.myServentInfo.getId() != 0) {
+				firstSuccessor = allNodeIdInfoMap.get(0);
+			}
 		}
 		successorTable[0] = firstSuccessor;
 
@@ -341,5 +345,35 @@ public class ChordState {
 
 	public int getLastIdForJob(String jobName) {
 		return Collections.max(getAllIdsForJob(jobName));
+	}
+
+	public void removeJob(String jobName) {
+		for (Job job: allJobs) {
+			if (job.getName().equals(jobName)) {
+				allJobs.remove(job);
+				break;
+			}
+		}
+
+		List<Integer> ids = new ArrayList<>();
+		for (Map.Entry<Integer, FractalIdJob> entry: serventJobs.entrySet()) {
+			if (entry.getValue().getJobName().equals(jobName)) {
+				ids.add(entry.getKey());
+			}
+		}
+
+		for (Integer id: ids) {
+			serventJobs.remove(id);
+		}
+
+//		AppConfig.timestampedStandardPrint(serventJobs.toString());
+	}
+
+	public boolean addNewJob(Job job) {
+		if (!allJobs.contains(job)) {
+			allJobs.add(job);
+			return true;
+		}
+		return false;
 	}
 }

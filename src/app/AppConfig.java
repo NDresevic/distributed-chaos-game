@@ -132,35 +132,39 @@ public class AppConfig {
 			System.exit(0);
 		}
 
-		// TODO: dodati da je lista poslova
-		String jobName = properties.getProperty("job_name");
-		if (jobName == null) {
+		if (properties.getProperty("job_count") == null) {
 			return;
 		}
 
-		String[] pointsCoordinates = properties.getProperty("points.coordinates").split(";");
-		List<Point> points = new ArrayList<>();
-		try {
-			for (String coordinates: pointsCoordinates) {
-				String[] xy = coordinates.substring(1, coordinates.length() - 1).split(",");
-				points.add(new Point(Integer.parseInt(xy[0]), Integer.parseInt(xy[1])));
+		int jobsCount = Integer.parseInt(properties.getProperty("job_count"));
+		for (int i = 0; i < jobsCount; i++) {
+			String jobName = properties.getProperty("job" + i + ".name");
+
+			String[] pointsCoordinates = properties.getProperty("job" + i + ".points.coordinates").split(";");
+			List<Point> points = new ArrayList<>();
+			try {
+				for (String coordinates: pointsCoordinates) {
+					String[] xy = coordinates.substring(1, coordinates.length() - 1).split(",");
+					points.add(new Point(Integer.parseInt(xy[0]), Integer.parseInt(xy[1])));
+				}
+			} catch (NumberFormatException e) {
+				timestampedErrorPrint("Problem reading points for the job. Exiting...");
+				System.exit(0);
 			}
-		} catch (NumberFormatException e) {
-			timestampedErrorPrint("Problem reading points for the job. Exiting...");
-			System.exit(0);
-		}
 
-		try {
-			int pointsCount = Integer.parseInt(properties.getProperty("points.count"));
-			double proportion = Double.parseDouble(properties.getProperty("proportion"));
-			int width = Integer.parseInt(properties.getProperty("width"));
-			int height = Integer.parseInt(properties.getProperty("height"));
+			try {
+				int pointsCount = Integer.parseInt(properties.getProperty("job" + i + ".points.count"));
+				double proportion = Double.parseDouble(properties.getProperty("job" + i + ".proportion"));
+				int width = Integer.parseInt(properties.getProperty("job" + i + ".width"));
+				int height = Integer.parseInt(properties.getProperty("job" + i + ".height"));
 
-			Job job = new Job(jobName, pointsCount, proportion, width, height, points);
-			myServentInfo.addJob(job);
-		} catch (NumberFormatException e) {
-			timestampedErrorPrint("Problem reading integer or double properties for the job. Exiting...");
-			System.exit(0);
+				Job job = new Job(jobName, pointsCount, proportion, width, height, points);
+				myServentInfo.addJob(job);
+				AppConfig.chordState.addNewJob(job);
+			} catch (NumberFormatException e) {
+				timestampedErrorPrint("Problem reading integer or double properties for the job. Exiting...");
+				System.exit(0);
+			}
 		}
 	}
 	

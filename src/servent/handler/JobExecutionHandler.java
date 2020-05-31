@@ -41,6 +41,7 @@ public class JobExecutionHandler implements MessageHandler {
             JobExecution jobExecution = new JobExecution(job.getName(), fractalIds.get(0), job.getProportion(),
                     job.getWidth(), job.getHeight(), pointList);
             AppConfig.chordState.setExecutionJob(jobExecution);
+            AppConfig.chordState.addNewJob(job);
             Thread t = new Thread(jobExecution);
             t.start();
             return;

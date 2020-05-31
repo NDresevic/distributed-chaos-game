@@ -1,29 +1,23 @@
 package cli.command;
 
 import app.AppConfig;
-import cli.CLIParser;
-import servent.SimpleServentListener;
+import servent.message.StopJobMessage;
+import servent.message.util.MessageUtil;
 
 public class StopCommand implements CLICommand {
+    @Override
+    public String commandName() {
+        return "stop";
+    }
 
-	private CLIParser parser;
-	private SimpleServentListener listener;
-	
-	public StopCommand(CLIParser parser, SimpleServentListener listener) {
-		this.parser = parser;
-		this.listener = listener;
-	}
-	
-	@Override
-	public String commandName() {
-		return "stop";
-	}
-
-	@Override
-	public void execute(String args) {
-		AppConfig.timestampedStandardPrint("Stopping...");
-		parser.stop();
-		listener.stop();
-	}
-
+    @Override
+    public void execute(String args) {
+        // send to first successor to stop the job
+        StopJobMessage message = new StopJobMessage(AppConfig.myServentInfo.getListenerPort(),
+                AppConfig.chordState.getNextNodePort(),
+                AppConfig.myServentInfo.getIpAddress(),
+                AppConfig.chordState.getNextNodeIpAddress(),
+                args);
+        MessageUtil.sendMessage(message);
+    }
 }

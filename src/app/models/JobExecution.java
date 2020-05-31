@@ -46,6 +46,7 @@ public class JobExecution implements Runnable, Cancellable {
     @Override
     public void stop() {
         this.working = false;
+        AppConfig.timestampedStandardPrint("Stopped computing points for job \'" + jobName + "\'");
     }
 
     public String getJobName() {
