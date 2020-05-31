@@ -97,4 +97,8 @@ public class JobExecution implements Runnable, Cancellable {
         int newY = (int) (randomPoint.getY() + proportion * (lastPoint.getY() - randomPoint.getY()));
         return new Point(newX, newY);
     }
+
+    public int getComputedPointsCount() {
+        return computedPoints.size();
+    }
 }
