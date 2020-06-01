@@ -29,13 +29,26 @@ public class JobExecutionHandler implements MessageHandler {
         }
 
         JobExecutionMessage jobExecutionMessage = (JobExecutionMessage) clientMessage;
+        int receiverId = jobExecutionMessage.getFinalReceiverId();
         List<String> fractalIds = jobExecutionMessage.getFractalIds();
         List<Point> pointList = jobExecutionMessage.getStartPoints();
-        AppConfig.timestampedStandardPrint("Fractal ids: " + fractalIds.toString());
-        AppConfig.timestampedStandardPrint("Starting points: " + pointList.toString());
+        Job job = jobExecutionMessage.getJob();
+        int currentLevel = jobExecutionMessage.getLevel();
         AppConfig.chordState.setServentJobs(jobExecutionMessage.getServentJobsMap());
 
-        Job job = jobExecutionMessage.getJob();
+        // if I am not intended final receiver then just pass message further
+        if (receiverId != AppConfig.myServentInfo.getId()) {
+            ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(receiverId);
+            JobExecutionMessage jem = new JobExecutionMessage(AppConfig.myServentInfo.getListenerPort(),
+                    nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(), nextServent.getIpAddress(),
+                    fractalIds, pointList, job, AppConfig.chordState.getServentJobs(), currentLevel, receiverId);
+            MessageUtil.sendMessage(jem);
+            return;
+        }
+
+        AppConfig.timestampedStandardPrint("Fractal ids: " + fractalIds.toString());
+        AppConfig.timestampedStandardPrint("Starting points: " + pointList.toString());
+
         // no further splitting, job execution can start
         if (fractalIds.size() == 1) {
             JobExecution jobExecution = new JobExecution(job.getName(), fractalIds.get(0), job.getProportion(),
@@ -77,13 +90,13 @@ public class JobExecutionHandler implements MessageHandler {
                 }
             }
 
-            // todo: FIX THIS ASAP - send over successor table
-            int executorId = AppConfig.chordState.getIdForFractalIDAndJob(partialFractalIds.get(0), job.getName());
-            ServentInfo executorServent = AppConfig.chordState.getAllNodeIdInfoMap().get(executorId);
             // send to one node partialFractalIds, regionPoints and job
+            int finalReceiverId = AppConfig.chordState.getIdForFractalIDAndJob(partialFractalIds.get(0), job.getName());
+            ServentInfo receiverServent = AppConfig.chordState.getNextNodeForServentId(finalReceiverId);
+
             JobExecutionMessage jem = new JobExecutionMessage(AppConfig.myServentInfo.getListenerPort(),
-                    executorServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(), executorServent.getIpAddress(),
-                    partialFractalIds, regionPoints, job, AppConfig.chordState.getServentJobs(), level);
+                    receiverServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(), receiverServent.getIpAddress(),
+                    partialFractalIds, regionPoints, job, AppConfig.chordState.getServentJobs(), level, finalReceiverId);
             MessageUtil.sendMessage(jem);
         }
     }

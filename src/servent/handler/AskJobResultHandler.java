@@ -2,10 +2,8 @@ package servent.handler;
 
 import app.AppConfig;
 import app.models.Point;
-import servent.message.AskJobResultMessage;
-import servent.message.JobResultMessage;
-import servent.message.Message;
-import servent.message.MessageType;
+import app.models.ServentInfo;
+import servent.message.*;
 import servent.message.util.MessageUtil;
 
 import java.util.List;
@@ -27,8 +25,20 @@ public class AskJobResultHandler implements MessageHandler {
 
         AskJobResultMessage askJobResultMessage = (AskJobResultMessage) clientMessage;
         int lastServentId = askJobResultMessage.getLastServentId();
+        int receiverId = askJobResultMessage.getFinalReceiverId();
         List<Point> receivedComputedPoints = askJobResultMessage.getComuptedPoints();
         String jobName = askJobResultMessage.getJobName();
+
+        // if I am not intended final receiver then just pass message further
+        if (receiverId != AppConfig.myServentInfo.getId()) {
+            ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(receiverId);
+
+            AskJobResultMessage arm = new AskJobResultMessage(clientMessage.getSenderPort(),
+                    nextServent.getListenerPort(), clientMessage.getSenderIpAddress(),
+                    nextServent.getIpAddress(), jobName, lastServentId, receiverId, receivedComputedPoints);
+            MessageUtil.sendMessage(arm);
+            return;
+        }
 
         // add my points
         List<Point> myComputedPoints = AppConfig.chordState.getExecutionJob().getComputedPoints();
@@ -39,17 +49,21 @@ public class AskJobResultHandler implements MessageHandler {
             int width = AppConfig.chordState.getExecutionJob().getWidth();
             int height = AppConfig.chordState.getExecutionJob().getHeight();
             double proportion = AppConfig.chordState.getExecutionJob().getProportion();
+            int finalReceiverId = AppConfig.chordState.getNodeIdForServentPortAndAddress(clientMessage.getSenderPort(), clientMessage.getSenderIpAddress());
+            ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(finalReceiverId);
 
-            // todo: popravi slanje vise
             JobResultMessage jobResultMessage = new JobResultMessage(AppConfig.myServentInfo.getListenerPort(),
-                    clientMessage.getSenderPort(), AppConfig.myServentInfo.getIpAddress(),
-                    clientMessage.getSenderIpAddress(), jobName, receivedComputedPoints, width, height, proportion);
+                    nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
+                    nextServent.getIpAddress(), finalReceiverId, jobName, receivedComputedPoints, width, height, proportion);
             MessageUtil.sendMessage(jobResultMessage);
         } else {
             // send to first successor
+            int firstSuccessorId = AppConfig.chordState.getFirstSuccessorId();
+
             AskJobResultMessage arm = new AskJobResultMessage(clientMessage.getSenderPort(),
                     AppConfig.chordState.getNextNodePort(), clientMessage.getSenderIpAddress(),
-                    AppConfig.chordState.getNextNodeIpAddress(), jobName, lastServentId, receivedComputedPoints);
+                    AppConfig.chordState.getNextNodeIpAddress(), jobName, lastServentId, firstSuccessorId,
+                    receivedComputedPoints);
             MessageUtil.sendMessage(arm);
         }
     }

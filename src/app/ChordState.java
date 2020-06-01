@@ -170,7 +170,80 @@ public class ChordState {
 
 		return false;
 	}
-	
+
+	public int getNodeIdForServentPortAndAddress(int port, String ipAddress) {
+		for (Map.Entry<Integer, ServentInfo> entry: allNodeIdInfoMap.entrySet()) {
+			if (entry.getValue().getListenerPort() == port && entry.getValue().getIpAddress().equals(ipAddress)) {
+				return entry.getKey();
+			}
+		}
+		return -1;
+	}
+
+	public int getFirstSuccessorId() {
+		return successorTable[0].getId();
+	}
+
+	// returns true if we can send message directly to servent
+	private boolean isServentMySuccessor(int serventId) {
+		for (ServentInfo successor: successorTable) {
+			if (successor.getId() == serventId) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isBetweenNodes(int left, int right, int target) {
+		int temp = target;
+		while (true) {
+			temp = (temp + 1) % allNodeIdInfoMap.size();
+			if (temp == left) {
+				return false;
+			}
+			if (temp == right) {
+				return true;
+			}
+		}
+	}
+
+	public ServentInfo getNextNodeForServentId(int receiverId) {
+		// if it is my successor send directly to it
+		if (isServentMySuccessor(receiverId)) {
+			return allNodeIdInfoMap.get(receiverId);
+		}
+
+		int leftId = successorTable[0].getId();
+		for (int i = 1; i < successorTable.length; i++) {
+			int rightId = successorTable[i].getId();
+			if (isBetweenNodes(leftId, rightId, receiverId)) {
+				return successorTable[i-1];
+			}
+			leftId = rightId;
+		}
+
+		if (isBetweenNodes(leftId, successorTable[0].getId(), receiverId)) {
+			return successorTable[successorTable.length - 1];
+		}
+
+//		int successorId = successorTable[successorTable.length - 1].getId();
+//		for (int i = successorTable.length - 2; i >= 0; i--) {
+//			if (successorTable[i] == null) {
+//				AppConfig.timestampedErrorPrint("Couldn't find successor to send message for " + receiverId);
+//				break;
+//			}
+//
+//			int currentId = successorTable[i].getId();
+//			if (receiverId <= currentId && currentId < successorId) {
+//				return successorTable[i+1];
+//			}
+//			if (successorId > receiverId && currentId < receiverId) {
+//				return successorTable[i];
+//			}
+//		}
+		return successorTable[0];
+	}
+
 	/**
 	 * Main chord operation - find the nearest node to hop to to find a specific key.
 	 * We have to take a value that is smaller than required to make sure we don't overshoot.

@@ -4,7 +4,6 @@ import app.AppConfig;
 import app.models.ServentInfo;
 import servent.message.AskJobFractalIDResultMessage;
 import servent.message.AskJobResultMessage;
-import servent.message.Message;
 import servent.message.util.MessageUtil;
 
 public class ResultCommand implements CLICommand {
@@ -29,30 +28,29 @@ public class ResultCommand implements CLICommand {
 
             int firstServentId = AppConfig.chordState.getFirstIdForJob(jobName);
             int lastServentId = AppConfig.chordState.getLastIdForJob(jobName);
-            ServentInfo firstServent = AppConfig.chordState.getAllNodeIdInfoMap().get(firstServentId);
-            // todo: fix asap ne slati ovako
+            ServentInfo receiverServent = AppConfig.chordState.getNextNodeForServentId(firstServentId);
+
             AskJobResultMessage askJobResultMessage = new AskJobResultMessage(
                     AppConfig.myServentInfo.getListenerPort(),
-                    firstServent.getListenerPort(),
+                    receiverServent.getListenerPort(),
                     AppConfig.myServentInfo.getIpAddress(),
-                    firstServent.getIpAddress(), jobName, lastServentId);
+                    receiverServent.getIpAddress(), jobName, lastServentId, firstServentId);
             MessageUtil.sendMessage(askJobResultMessage);
         }
         // get result for specific job and fractalId
         else {
-            int executorId = AppConfig.chordState.getIdForFractalIDAndJob(fractalId, jobName);
-            ServentInfo executorServent = AppConfig.chordState.getAllNodeIdInfoMap().get(executorId);
-            // todo: fix sending
+            int receiverId = AppConfig.chordState.getIdForFractalIDAndJob(fractalId, jobName);
+            ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(receiverId);
+
             AskJobFractalIDResultMessage message = new AskJobFractalIDResultMessage(
                     AppConfig.myServentInfo.getListenerPort(),
-                    executorServent.getListenerPort(),
+                    nextServent.getListenerPort(),
                     AppConfig.myServentInfo.getIpAddress(),
-                    executorServent.getIpAddress(),
-                    jobName);
+                    nextServent.getIpAddress(),
+                    jobName, receiverId);
             MessageUtil.sendMessage(message);
         }
 
-
-        // todo: BUG - kad se trazi rez na istom cvoru koji je zapoceo posao, ne radi
+        // todo: BUG - kad se trazi rez na istom cvoru koji je zapoceo posao, ne radi -> NEKAD samo???
     }
 }

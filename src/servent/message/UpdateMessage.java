@@ -12,8 +12,8 @@ public class UpdateMessage extends BasicMessage {
 	private Map<Integer, ServentInfo> nodesMap;
 
 	public UpdateMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
-						 int senderId, Map<Integer, ServentInfo> nodesMap, String text) {
-		super(MessageType.UPDATE, senderPort, receiverPort, senderIpAddress, receiverIpAddress, text);
+						 int senderId, Map<Integer, ServentInfo> nodesMap) {
+		super(MessageType.UPDATE, senderPort, receiverPort, senderIpAddress, receiverIpAddress);
 		this.senderId = senderId;
 		this.nodesMap = nodesMap;
 	}

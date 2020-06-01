@@ -36,7 +36,6 @@ public class QuitHandler implements MessageHandler {
         }
 
         Map<Integer, ServentInfo> newNodesMap = new HashMap<>();
-//        Map<Integer, ServentInfo> oldNodesMap = new HashMap<>();
         AppConfig.chordState.getAllNodeIdInfoMap().remove(quitterId);
         for (Map.Entry<Integer, ServentInfo> entry: AppConfig.chordState.getAllNodeIdInfoMap().entrySet()) {
             if (entry.getKey() > quitterId) {
@@ -53,9 +52,9 @@ public class QuitHandler implements MessageHandler {
         AppConfig.chordState.getAllNodeIdInfoMap().clear();
         AppConfig.chordState.addNodes(newNodesMap);
 
-        // slanje svima dalje
+        // send to first successor
         QuitMessage newQuitMessage = new QuitMessage(quitMessage.getSenderPort(), AppConfig.chordState.getNextNodePort(),
-                quitMessage.getSenderIpAddress(), AppConfig.chordState.getNextNodeIpAddress(), quitterId, myId);
+                quitMessage.getSenderIpAddress(), AppConfig.chordState.getNextNodeIpAddress(), quitterId);
         MessageUtil.sendMessage(newQuitMessage);
     }
 }

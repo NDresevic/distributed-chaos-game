@@ -2,10 +2,12 @@ package servent.handler;
 
 import app.AppConfig;
 import app.models.Point;
+import app.models.ServentInfo;
 import servent.message.JobFractalIDResultMessage;
 import servent.message.JobResultMessage;
 import servent.message.Message;
 import servent.message.MessageType;
+import servent.message.util.MessageUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -30,12 +32,25 @@ public class JobFractalIDResultHandler implements MessageHandler {
         }
 
         JobFractalIDResultMessage resultMessage = (JobFractalIDResultMessage) clientMessage;
+        int receiverId = resultMessage.getFinalReceiverId();
         List<Point> resultPoints = resultMessage.getComputedPoints();
         String jobName = resultMessage.getJobName();
         String fractalId = resultMessage.getFractalId();
         int width = resultMessage.getWidth();
         int height = resultMessage.getHeight();
         double proportion = resultMessage.getProportion();
+
+        // if I am not intended final receiver then just pass message further
+        if (receiverId != AppConfig.myServentInfo.getId()) {
+            ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(receiverId);
+
+            JobFractalIDResultMessage message = new JobFractalIDResultMessage(
+                    resultMessage.getSenderPort(), nextServent.getListenerPort(),
+                    resultMessage.getSenderIpAddress(), nextServent.getIpAddress(), receiverId,
+                    jobName, fractalId, resultPoints, width, height, proportion);
+            MessageUtil.sendMessage(message);
+            return;
+        }
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
         WritableRaster writableRaster = image.getRaster();

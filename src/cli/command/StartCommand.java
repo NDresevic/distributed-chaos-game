@@ -83,12 +83,12 @@ public class StartCommand implements CLICommand {
 
         if (jobNodesCount < pointsCount) {
             // only one node is executing the job
-            int executorId = AppConfig.chordState.getIdForFractalIDAndJob(fractalIds.get(0), job.getName());
-            ServentInfo executorServent = AppConfig.chordState.getAllNodeIdInfoMap().get(executorId);
+            int finalReceiverId = AppConfig.chordState.getIdForFractalIDAndJob(fractalIds.get(0), job.getName());
+            ServentInfo receiverServent = AppConfig.chordState.getNextNodeForServentId(finalReceiverId);
 
             JobExecutionMessage jobExecutionMessage = new JobExecutionMessage(AppConfig.myServentInfo.getListenerPort(),
-                    executorServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(), executorServent.getIpAddress(),
-                    fractalIds, jobPoints, job, serventJobs, 0);
+                    receiverServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(), receiverServent.getIpAddress(),
+                    fractalIds, jobPoints, job, serventJobs, 0, finalReceiverId);
             MessageUtil.sendMessage(jobExecutionMessage);
             return;
         }
@@ -119,13 +119,13 @@ public class StartCommand implements CLICommand {
                 }
             }
 
-            // todo: FIX THIS ASAP - send over successor table
-            int executorId = AppConfig.chordState.getIdForFractalIDAndJob(partialFractalIds.get(0), job.getName());
-            ServentInfo executorServent = AppConfig.chordState.getAllNodeIdInfoMap().get(executorId);
             // send to one node partialFractalIds, regionPoints and job
+            int finalReceiverId = AppConfig.chordState.getIdForFractalIDAndJob(partialFractalIds.get(0), job.getName());
+            ServentInfo receiverServent = AppConfig.chordState.getNextNodeForServentId(finalReceiverId);
+
             JobExecutionMessage jobExecutionMessage = new JobExecutionMessage(AppConfig.myServentInfo.getListenerPort(),
-                    executorServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(), executorServent.getIpAddress(),
-                    partialFractalIds, regionPoints, job, serventJobs, 0);
+                    receiverServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(), receiverServent.getIpAddress(),
+                    partialFractalIds, regionPoints, job, serventJobs, 0, finalReceiverId);
             MessageUtil.sendMessage(jobExecutionMessage);
         }
     }

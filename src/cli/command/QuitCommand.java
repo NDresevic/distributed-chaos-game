@@ -34,7 +34,7 @@ public class QuitCommand implements CLICommand {
             QuitMessage quitMessage = new QuitMessage(AppConfig.myServentInfo.getListenerPort(),
                     AppConfig.chordState.getNextNodePort(),
                     AppConfig.myServentInfo.getIpAddress(),
-                    AppConfig.chordState.getNextNodeIpAddress(), AppConfig.myServentInfo.getId(), AppConfig.myServentInfo.getId());
+                    AppConfig.chordState.getNextNodeIpAddress(), AppConfig.myServentInfo.getId());
             MessageUtil.sendMessage(quitMessage);
         }
 

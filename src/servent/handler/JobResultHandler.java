@@ -2,9 +2,11 @@ package servent.handler;
 
 import app.AppConfig;
 import app.models.Point;
+import app.models.ServentInfo;
 import servent.message.JobResultMessage;
 import servent.message.Message;
 import servent.message.MessageType;
+import servent.message.util.MessageUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -29,11 +31,23 @@ public class JobResultHandler implements MessageHandler {
         }
 
         JobResultMessage jobResultMessage = (JobResultMessage) clientMessage;
+        int receiverId = jobResultMessage.getFinalReceiverId();
         List<Point> resultPoints = jobResultMessage.getComputedPoints();
         String jobName = jobResultMessage.getJobName();
         int width = jobResultMessage.getWidth();
         int height = jobResultMessage.getHeight();
         double proportion = jobResultMessage.getProportion();
+
+        // if I am not intended final receiver then just pass message further
+        if (receiverId != AppConfig.myServentInfo.getId()) {
+            ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(receiverId);
+
+            JobResultMessage jrm = new JobResultMessage(jobResultMessage.getSenderPort(),
+                    nextServent.getListenerPort(), jobResultMessage.getSenderIpAddress(),
+                    nextServent.getIpAddress(), receiverId, jobName, resultPoints, width, height, proportion);
+            MessageUtil.sendMessage(jrm);
+            return;
+        }
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
         WritableRaster writableRaster = image.getRaster();

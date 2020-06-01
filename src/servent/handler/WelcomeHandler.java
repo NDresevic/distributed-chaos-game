@@ -28,13 +28,12 @@ public class WelcomeHandler implements MessageHandler {
 		WelcomeMessage welcomeMsg = (WelcomeMessage)clientMessage;
 		int myId = welcomeMsg.getId();
 		AppConfig.myServentInfo.setId(myId);
-
 		AppConfig.chordState.init(welcomeMsg);
 
 		Map<Integer, ServentInfo> nodesMap = new HashMap<>(AppConfig.chordState.getAllNodeIdInfoMap());
 		UpdateMessage um = new UpdateMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getNextNodePort(),
 				AppConfig.myServentInfo.getIpAddress(), AppConfig.chordState.getNextNodeIpAddress(), myId,
-				nodesMap, "");
+				nodesMap);
 		MessageUtil.sendMessage(um);
 	}
 }

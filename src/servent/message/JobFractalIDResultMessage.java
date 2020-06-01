@@ -14,17 +14,23 @@ public class JobFractalIDResultMessage extends BasicMessage {
     private int width;
     private int height;
     private double proportion;
+    private int finalReceiverId;
 
     public JobFractalIDResultMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
-                                     String jobName, String fractalId, List<Point> computedPoints, int width, int height,
-                                     double proportion) {
+                                     int finalReceiverId, String jobName, String fractalId, List<Point> computedPoints,
+                                     int width, int height, double proportion) {
         super(MessageType.JOB_FRACTALID_RESULT, senderPort, receiverPort, senderIpAddress, receiverIpAddress);
+        this.finalReceiverId = finalReceiverId;
         this.jobName = jobName;
         this.fractalId = fractalId;
         this.computedPoints = computedPoints;
         this.width = width;
         this.height = height;
         this.proportion = proportion;
+    }
+
+    public int getFinalReceiverId() {
+        return finalReceiverId;
     }
 
     public String getJobName() {

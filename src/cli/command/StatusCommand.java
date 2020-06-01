@@ -17,7 +17,7 @@ public class StatusCommand implements CLICommand {
         if (args == null || args.equals("")) { // get status for everything
             AskStatusMessage askStatusMessage = new AskStatusMessage(AppConfig.myServentInfo.getListenerPort(),
                     AppConfig.chordState.getNextNodePort(), AppConfig.myServentInfo.getIpAddress(),
-                    AppConfig.chordState.getNextNodeIpAddress());
+                    AppConfig.chordState.getNextNodeIpAddress(), AppConfig.chordState.getFirstSuccessorId());
             MessageUtil.sendMessage(askStatusMessage);
             return;
         }
@@ -26,22 +26,21 @@ public class StatusCommand implements CLICommand {
         String jobName = argsList[0];
         if (argsList.length == 1) { // get status for job
             int firstServentId = AppConfig.chordState.getFirstIdForJob(jobName);
+            ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(firstServentId);
 
-            ServentInfo firstServent = AppConfig.chordState.getAllNodeIdInfoMap().get(firstServentId);
-            // todo: fix asap ne slati ovako
             AskStatusMessage askStatusMessage = new AskStatusMessage(AppConfig.myServentInfo.getListenerPort(),
-                    firstServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
-                    firstServent.getIpAddress(), jobName);
+                    nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
+                    nextServent.getIpAddress(), firstServentId, jobName);
             MessageUtil.sendMessage(askStatusMessage);
         } else { // get status for specific job and fractalID
             String fractalId = argsList[1];
-            int executorId = AppConfig.chordState.getIdForFractalIDAndJob(fractalId, jobName);
-            ServentInfo executorServent = AppConfig.chordState.getAllNodeIdInfoMap().get(executorId);
+            AppConfig.timestampedStandardPrint(AppConfig.chordState.getServentJobs().toString());
+            int receiverId = AppConfig.chordState.getIdForFractalIDAndJob(fractalId, jobName);
+            ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(receiverId);
 
-            // todo: fix sending
             AskStatusMessage askStatusMessage = new AskStatusMessage(AppConfig.myServentInfo.getListenerPort(),
-                    executorServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
-                    executorServent.getIpAddress(), jobName, fractalId);
+                    nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
+                    nextServent.getIpAddress(), receiverId, jobName, fractalId);
             MessageUtil.sendMessage(askStatusMessage);
         }
     }

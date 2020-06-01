@@ -16,16 +16,18 @@ public class JobExecutionMessage extends BasicMessage {
     private Job job;
     private Map<Integer, FractalIdJob> serventJobsMap;
     private int level;
+    private int finalReceiverId;
 
     public JobExecutionMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
                                List<String> fractalIds, List<Point> startPoints, Job job,
-                               Map<Integer, FractalIdJob> serventJobsMap, int level) {
+                               Map<Integer, FractalIdJob> serventJobsMap, int level, int finalReceiverId) {
         super(MessageType.JOB_EXECUTION, senderPort, receiverPort, senderIpAddress, receiverIpAddress);
         this.fractalIds = fractalIds;
         this.startPoints = startPoints;
         this.job = job;
         this.serventJobsMap = serventJobsMap;
         this.level = level;
+        this.finalReceiverId = finalReceiverId;
     }
 
     public List<String> getFractalIds() {
@@ -46,5 +48,9 @@ public class JobExecutionMessage extends BasicMessage {
 
     public int getLevel() {
         return level;
+    }
+
+    public int getFinalReceiverId() {
+        return finalReceiverId;
     }
 }

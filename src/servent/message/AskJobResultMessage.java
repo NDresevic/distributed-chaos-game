@@ -12,20 +12,23 @@ public class AskJobResultMessage extends BasicMessage {
     private String jobName;
     private int lastServentId;
     private List<Point> comuptedPoints;
+    private int finalReceiverId;
 
     public AskJobResultMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
-                               String jobName, int lastServentId) {
+                               String jobName, int lastServentId, int finalReceiverId) {
         super(MessageType.ASK_JOB_RESULT, senderPort, receiverPort, senderIpAddress, receiverIpAddress);
         this.jobName = jobName;
         this.lastServentId = lastServentId;
+        this.finalReceiverId = finalReceiverId;
         this.comuptedPoints = new ArrayList<>();
     }
 
     public AskJobResultMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
-                               String jobName, int lastServentId, List<Point> comuptedPoints) {
+                               String jobName, int lastServentId, int finalReceiverId, List<Point> comuptedPoints) {
         super(MessageType.ASK_JOB_RESULT, senderPort, receiverPort, senderIpAddress, receiverIpAddress);
         this.lastServentId = lastServentId;
         this.jobName = jobName;
+        this.finalReceiverId = finalReceiverId;
         this.comuptedPoints = comuptedPoints;
     }
 
@@ -39,5 +42,9 @@ public class AskJobResultMessage extends BasicMessage {
 
     public List<Point> getComuptedPoints() {
         return comuptedPoints;
+    }
+
+    public int getFinalReceiverId() {
+        return finalReceiverId;
     }
 }

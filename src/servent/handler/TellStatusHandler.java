@@ -1,9 +1,11 @@
 package servent.handler;
 
 import app.AppConfig;
+import app.models.ServentInfo;
 import servent.message.Message;
 import servent.message.MessageType;
 import servent.message.TellStatusMessage;
+import servent.message.util.MessageUtil;
 
 import java.util.Map;
 
@@ -23,7 +25,21 @@ public class TellStatusHandler implements MessageHandler {
         }
 
         TellStatusMessage tellStatusMessage = (TellStatusMessage) clientMessage;
+        int receiverId = tellStatusMessage.getFinalReceiverId();
         Map<String, Map<String, Integer>> resultMap = tellStatusMessage.getResultMap();
+        int version = tellStatusMessage.getVersion();
+
+        // if I am not intended final receiver then just pass message further
+        if (receiverId != AppConfig.myServentInfo.getId()) {
+            ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(receiverId);
+
+            TellStatusMessage tsm = new TellStatusMessage(tellStatusMessage.getSenderPort(), nextServent.getListenerPort(),
+                    tellStatusMessage.getSenderIpAddress(), nextServent.getIpAddress(), receiverId, resultMap, version);
+            MessageUtil.sendMessage(tsm);
+            return;
+        }
+
+        // print status
         StringBuilder result = new StringBuilder("STATUS: \n");
         for (Map.Entry<String, Map<String, Integer>> entry: resultMap.entrySet()) {
             result.append("jobName=" + entry.getKey() + "\n");
@@ -34,11 +50,10 @@ public class TellStatusHandler implements MessageHandler {
                 totalPointsCount += e.getValue();
                 totalServentsCount++;
             }
-            if (tellStatusMessage.getVersion() != 0) {
+            if (version != 0) {
                 result.append("totalPointsCount=" + totalPointsCount + ", totalNodesCount=" + totalServentsCount + "\n");
             }
         }
-        // broj tacaka na fraktalu i koliko cvorova radi na njemu
         AppConfig.timestampedStandardPrint(result.toString());
     }
 }
