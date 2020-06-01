@@ -30,9 +30,14 @@ public class AskStatusHandler implements MessageHandler {
         int receiverId = askStatusMessage.getFinalReceiverId();
         String jobName = askStatusMessage.getJobName();
         String fractalId = askStatusMessage.getFractalId();
+        int version = askStatusMessage.getVersion();
 
-        String myFractalId = AppConfig.chordState.getExecutionJob().getFractalId();
-        int myPointsCount = AppConfig.chordState.getExecutionJob().getComputedPointsCount();
+        String myFractalId = "";
+        int myPointsCount = 0;
+        if (AppConfig.chordState.getExecutionJob() != null) {
+            myFractalId = AppConfig.chordState.getExecutionJob().getFractalId();
+            myPointsCount = AppConfig.chordState.getExecutionJob().getComputedPointsCount();
+        }
 
         // if I am not intended final receiver then just pass message further
         if (receiverId != AppConfig.myServentInfo.getId()) {
@@ -40,12 +45,12 @@ public class AskStatusHandler implements MessageHandler {
 
             AskStatusMessage asm = new AskStatusMessage(askStatusMessage.getSenderPort(), nextServent.getListenerPort(),
                     askStatusMessage.getSenderIpAddress(), nextServent.getIpAddress(), receiverId,
-                    jobName, fractalId, askStatusMessage.getResultMap());
+                    jobName, fractalId, askStatusMessage.getResultMap(), version);
             MessageUtil.sendMessage(asm);
             return;
         }
 
-        if (jobName != null && fractalId != null) { // sending back results for job and fractalID
+        if (version == 0) { // sending back results for job and fractalID
             Map<String, Map<String, Integer>> resultMap = new HashMap<>();
             String myJobName = AppConfig.chordState.getExecutionJob().getJobName();
             resultMap.put(myJobName, new HashMap<>());
@@ -57,7 +62,7 @@ public class AskStatusHandler implements MessageHandler {
                     nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
                     nextServent.getIpAddress(), finalReceiverId, resultMap, 0);
             MessageUtil.sendMessage(tellStatusMessage);
-        } else if (jobName != null) {
+        } else if (version == 1) {
             int lastServentId = AppConfig.chordState.getLastIdForJob(jobName);
 
             // add my info to result map
@@ -76,29 +81,31 @@ public class AskStatusHandler implements MessageHandler {
             } else { // pass message to first successor
                 AskStatusMessage asm = new AskStatusMessage(askStatusMessage.getSenderPort(),
                         AppConfig.chordState.getNextNodePort(), askStatusMessage.getSenderIpAddress(),
-                        AppConfig.chordState.getNextNodeIpAddress(), AppConfig.chordState.getFirstSuccessorId(), jobName, resultMap);
+                        AppConfig.chordState.getNextNodeIpAddress(), AppConfig.chordState.getFirstSuccessorId(),
+                        jobName, resultMap, 1);
                 MessageUtil.sendMessage(asm);
             }
         } else { // getting results for all jobs
             Map<String, Map<String, Integer>> resultMap = askStatusMessage.getResultMap();
-            String myJobName = AppConfig.chordState.getExecutionJob().getJobName();
-            resultMap.putIfAbsent(myJobName, new HashMap<>());
-            resultMap.get(myJobName).put(myFractalId, myPointsCount);
+            if (AppConfig.chordState.getExecutionJob() != null) {   // add my results if I am executing
+                String myJobName = AppConfig.chordState.getExecutionJob().getJobName();
+                resultMap.putIfAbsent(myJobName, new HashMap<>());
+                resultMap.get(myJobName).put(myFractalId, myPointsCount);
+            }
 
             if (AppConfig.myServentInfo.getListenerPort() == askStatusMessage.getSenderPort()
                     && AppConfig.myServentInfo.getIpAddress().equals(askStatusMessage.getSenderIpAddress())) {
-                // if I send message it made circle
-                int finalReceiverId = AppConfig.chordState.getNodeIdForServentPortAndAddress(askStatusMessage.getSenderPort(), askStatusMessage.getSenderIpAddress());
-                ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(finalReceiverId);
+                // if I send message it made circle, send result to myself
 
                 TellStatusMessage tellStatusMessage = new TellStatusMessage(AppConfig.myServentInfo.getListenerPort(),
-                        nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
-                        nextServent.getIpAddress(), finalReceiverId, resultMap, 2);
+                        AppConfig.myServentInfo.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
+                        AppConfig.myServentInfo.getIpAddress(), AppConfig.myServentInfo.getId(), resultMap, version);
                 MessageUtil.sendMessage(tellStatusMessage);
             } else { // else pass it to first successor
                 AskStatusMessage asm = new AskStatusMessage(askStatusMessage.getSenderPort(),
                         AppConfig.chordState.getNextNodePort(), askStatusMessage.getSenderIpAddress(),
-                        AppConfig.chordState.getNextNodeIpAddress(), AppConfig.chordState.getFirstSuccessorId(), resultMap);
+                        AppConfig.chordState.getNextNodeIpAddress(), AppConfig.chordState.getFirstSuccessorId(),
+                        resultMap, version);
                 MessageUtil.sendMessage(asm);
             }
         }

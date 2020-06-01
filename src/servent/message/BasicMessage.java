@@ -111,9 +111,8 @@ public class BasicMessage implements Message {
 	 */
 	@Override
 	public String toString() {
-		return "[" + getSenderPort() + "|" + getSenderIpAddress() + "|" + getSenderPort() +
+		return "[" + getSenderIpAddress() + "|" + getSenderPort() +
 				"|" + getMessageId() + "|" + getMessageText() + "|" + getMessageType() +
-				"|" + getReceiverIpAddress() + "|" + getReceiverPort() +
-				"|" + getReceiverPort() + "]";
+				"|" + getReceiverIpAddress() + "|" + getReceiverPort() + "]";
 	}
 }

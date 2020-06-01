@@ -17,7 +17,7 @@ public class StatusCommand implements CLICommand {
         if (args == null || args.equals("")) { // get status for everything
             AskStatusMessage askStatusMessage = new AskStatusMessage(AppConfig.myServentInfo.getListenerPort(),
                     AppConfig.chordState.getNextNodePort(), AppConfig.myServentInfo.getIpAddress(),
-                    AppConfig.chordState.getNextNodeIpAddress(), AppConfig.chordState.getFirstSuccessorId());
+                    AppConfig.chordState.getNextNodeIpAddress(), AppConfig.chordState.getFirstSuccessorId(), 2);
             MessageUtil.sendMessage(askStatusMessage);
             return;
         }
@@ -30,7 +30,7 @@ public class StatusCommand implements CLICommand {
 
             AskStatusMessage askStatusMessage = new AskStatusMessage(AppConfig.myServentInfo.getListenerPort(),
                     nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
-                    nextServent.getIpAddress(), firstServentId, jobName);
+                    nextServent.getIpAddress(), firstServentId, jobName, 1);
             MessageUtil.sendMessage(askStatusMessage);
         } else { // get status for specific job and fractalID
             String fractalId = argsList[1];
@@ -40,7 +40,7 @@ public class StatusCommand implements CLICommand {
 
             AskStatusMessage askStatusMessage = new AskStatusMessage(AppConfig.myServentInfo.getListenerPort(),
                     nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
-                    nextServent.getIpAddress(), receiverId, jobName, fractalId);
+                    nextServent.getIpAddress(), receiverId, jobName, fractalId, 0);
             MessageUtil.sendMessage(askStatusMessage);
         }
     }

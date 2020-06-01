@@ -5,6 +5,7 @@ import app.models.FractalIdJob;
 import app.models.Job;
 import app.models.Point;
 import app.models.ServentInfo;
+import servent.message.IdleMessage;
 import servent.message.JobExecutionMessage;
 import servent.message.util.MessageUtil;
 
@@ -65,12 +66,9 @@ public class StartCommand implements CLICommand {
         }
         Map<Integer, FractalIdJob> serventJobs = new HashMap<>();
         for (Map.Entry<Integer, ServentInfo> entry: AppConfig.chordState.getAllNodeIdInfoMap().entrySet()) {
-            // todo: videti sa ovim idle kako i sta
-            if (entry.getValue().isIdle()) {
-                serventJobs.put(entry.getKey(), fractalIdJobList.remove(0));
-                if (fractalIdJobList.isEmpty()) {
-                    break;
-                }
+            serventJobs.put(entry.getKey(), fractalIdJobList.remove(0));
+            if (fractalIdJobList.isEmpty()) {
+                break;
             }
         }
         AppConfig.chordState.setServentJobs(serventJobs);
@@ -127,6 +125,19 @@ public class StartCommand implements CLICommand {
                     receiverServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(), receiverServent.getIpAddress(),
                     partialFractalIds, regionPoints, job, serventJobs, 0, finalReceiverId);
             MessageUtil.sendMessage(jobExecutionMessage);
+        }
+
+        // send to idle nodes that they are idle and new job division
+        for (Map.Entry<Integer, ServentInfo> entry: AppConfig.chordState.getAllNodeIdInfoMap().entrySet()) {
+            int serventId = entry.getKey();
+            if (!AppConfig.chordState.getServentJobs().containsKey(serventId)) {   // servent is idle
+                ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(serventId);
+
+                IdleMessage idleMessage = new IdleMessage(AppConfig.myServentInfo.getListenerPort(),
+                        nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
+                        nextServent.getIpAddress(), AppConfig.chordState.getServentJobs(), serventId);
+                MessageUtil.sendMessage(idleMessage);
+            }
         }
     }
 

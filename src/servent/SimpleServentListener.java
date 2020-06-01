@@ -108,6 +108,9 @@ public class SimpleServentListener implements Runnable, Cancellable {
 				case TELL_STATUS:
 					messageHandler = new TellStatusHandler(clientMessage);
 					break;
+				case IDLE:
+					messageHandler = new IdleHandler(clientMessage);
+					break;
 				}
 				
 				threadPool.submit(messageHandler);

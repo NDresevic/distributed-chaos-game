@@ -9,58 +9,51 @@ public class AskStatusMessage extends BasicMessage {
 
     private String jobName;
     private String fractalId;
+    private int version;
     // [jobName -> [fractalId -> number of drawn points]]
     Map<String, Map<String, Integer>> resultMap;
     private int finalReceiverId;
 
     public AskStatusMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
-                            int finalReceiverId, String jobName, String fractalId) {
-        super(MessageType.ASK_STATUS, senderPort, receiverPort, senderIpAddress, receiverIpAddress);
-        this.finalReceiverId = finalReceiverId;
-        this.jobName = jobName;
-        this.fractalId = fractalId;
-        this.resultMap = new HashMap<>();
-        this.resultMap.put(jobName, new HashMap<>());
-    }
-
-    public AskStatusMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
-                            int finalReceiverId, String jobName, String fractalId, Map<String, Map<String, Integer>> resultMap) {
+                            int finalReceiverId, String jobName, String fractalId, Map<String, Map<String, Integer>> resultMap,
+                            int version) {
         super(MessageType.ASK_STATUS, senderPort, receiverPort, senderIpAddress, receiverIpAddress);
         this.finalReceiverId = finalReceiverId;
         this.jobName = jobName;
         this.fractalId = fractalId;
         this.resultMap = resultMap;
+        this.version = version;
     }
 
     public AskStatusMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
-                            int finalReceiverId, Map<String, Map<String, Integer>> resultMap) {
-        super(MessageType.ASK_STATUS, senderPort, receiverPort, senderIpAddress, receiverIpAddress);
-        this.finalReceiverId = finalReceiverId;
-        this.resultMap = resultMap;
+                            int finalReceiverId, String jobName, String fractalId, int version) {
+        this(senderPort, receiverPort, senderIpAddress, receiverIpAddress, finalReceiverId, jobName, fractalId,
+                new HashMap<>(), version);
     }
 
     public AskStatusMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
-                            int finalReceiverId, String jobName) {
-        super(MessageType.ASK_STATUS, senderPort, receiverPort, senderIpAddress, receiverIpAddress);
-        this.finalReceiverId = finalReceiverId;
-        this.jobName= jobName;
-        this.resultMap = new HashMap<>();
-        this.resultMap.put(jobName, new HashMap<>());
+                            int finalReceiverId, Map<String, Map<String, Integer>> resultMap, int version) {
+        this(senderPort, receiverPort, senderIpAddress, receiverIpAddress, finalReceiverId, "", "",
+                resultMap, version);
     }
 
     public AskStatusMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
-                            int finalReceiverId, String jobName, Map<String, Map<String, Integer>> resultMap) {
-        super(MessageType.ASK_STATUS, senderPort, receiverPort, senderIpAddress, receiverIpAddress);
-        this.finalReceiverId = finalReceiverId;
-        this.jobName= jobName;
-        this.resultMap = resultMap;
+                            int finalReceiverId, String jobName, int version) {
+        this(senderPort, receiverPort, senderIpAddress, receiverIpAddress, finalReceiverId, jobName, "",
+                new HashMap<>(), version);
     }
 
     public AskStatusMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
-                            int finalReceiverId) {
-        super(MessageType.ASK_STATUS, senderPort, receiverPort, senderIpAddress, receiverIpAddress);
-        this.finalReceiverId = finalReceiverId;
-        this.resultMap = new HashMap<>();
+                            int finalReceiverId, String jobName, Map<String, Map<String, Integer>> resultMap,
+                            int version) {
+        this(senderPort, receiverPort, senderIpAddress, receiverIpAddress, finalReceiverId, jobName, "",
+                resultMap, version);
+    }
+
+    public AskStatusMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
+                            int finalReceiverId, int version) {
+        this(senderPort, receiverPort, senderIpAddress, receiverIpAddress, finalReceiverId, "", "",
+                new HashMap<>(), version);
     }
 
     public int getFinalReceiverId() {
@@ -77,5 +70,9 @@ public class AskStatusMessage extends BasicMessage {
 
     public Map<String, Map<String, Integer>> getResultMap() {
         return resultMap;
+    }
+
+    public int getVersion() {
+        return version;
     }
 }
