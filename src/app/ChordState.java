@@ -125,10 +125,18 @@ public class ChordState {
 	}
 	
 	public int getNextNodePort() {
+		if (successorTable[0] == null && allNodeIdInfoMap.size() <= 1) {
+			return AppConfig.myServentInfo.getListenerPort();
+		}
 		return successorTable[0].getListenerPort();
 	}
 
-	public String getNextNodeIpAddress() { return successorTable[0].getIpAddress(); }
+	public String getNextNodeIpAddress() {
+		if (successorTable[0] == null && allNodeIdInfoMap.size() <= 1) {
+			return AppConfig.myServentInfo.getIpAddress();
+		}
+		return successorTable[0].getIpAddress();
+	}
 
 	public ServentInfo getPredecessor() {
 		return predecessorInfo;
@@ -180,6 +188,9 @@ public class ChordState {
 	}
 
 	public int getFirstSuccessorId() {
+		if (successorTable[0] == null && allNodeIdInfoMap.size() <= 1) {
+			return AppConfig.myServentInfo.getId();
+		}
 		return successorTable[0].getId();
 	}
 
@@ -207,6 +218,10 @@ public class ChordState {
 	}
 
 	public ServentInfo getNextNodeForServentId(int receiverId) {
+		// if I am receiver return myself
+		if (receiverId == AppConfig.myServentInfo.getId()) {
+			return AppConfig.myServentInfo;
+		}
 		// if it is my successor send directly to it
 		if (isServentMySuccessor(receiverId)) {
 			return allNodeIdInfoMap.get(receiverId);

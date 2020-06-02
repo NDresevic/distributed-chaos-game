@@ -13,6 +13,7 @@ public class StopCommand implements CLICommand {
 
     @Override
     public void execute(String args) {
+        // todo: stop posla ako ih ima vise
         // send to first successor to stop the job
         if (AppConfig.chordState.getAllNodeIdInfoMap().size() > 1) {
             StopJobMessage message = new StopJobMessage(AppConfig.myServentInfo.getListenerPort(),

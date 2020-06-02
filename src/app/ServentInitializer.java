@@ -54,6 +54,7 @@ public class ServentInitializer implements Runnable {
 			AppConfig.chordState.getAllNodeIdInfoMap().put(AppConfig.myServentInfo.getId(), AppConfig.myServentInfo);
 			AppConfig.timestampedStandardPrint("First node in Chord system.");
 		} else { //bootstrap gave us something else - let that node tell our successor that we are here
+			// todo: promeni localhost i sve da bude ip:port
 			NewNodeMessage nnm = new NewNodeMessage(AppConfig.myServentInfo.getListenerPort(), lastServentPort,
 					AppConfig.myServentInfo.getIpAddress(), "localhost", firstServentPort);
 			MessageUtil.sendMessage(nnm);

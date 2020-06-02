@@ -2,6 +2,7 @@ package servent.message.chaos_game;
 
 import app.models.FractalIdJob;
 import app.models.Job;
+import app.models.JobScheduleType;
 import app.models.Point;
 import servent.message.BasicMessage;
 import servent.message.MessageType;
@@ -20,11 +21,12 @@ public class JobExecutionMessage extends BasicMessage {
     private int level;
     private int finalReceiverId;
     private Map<FractalIdJob, FractalIdJob> mappedFractalsJobs;
+    private JobScheduleType scheduleType;
 
     public JobExecutionMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
                                List<String> fractalIds, List<Point> startPoints, Job job,
                                Map<Integer, FractalIdJob> serventJobsMap, int level, int finalReceiverId,
-                               Map<FractalIdJob, FractalIdJob> mappedFractalsJobs) {
+                               Map<FractalIdJob, FractalIdJob> mappedFractalsJobs, JobScheduleType scheduleType) {
         super(MessageType.JOB_EXECUTION, senderPort, receiverPort, senderIpAddress, receiverIpAddress);
         this.fractalIds = fractalIds;
         this.startPoints = startPoints;
@@ -33,6 +35,7 @@ public class JobExecutionMessage extends BasicMessage {
         this.level = level;
         this.finalReceiverId = finalReceiverId;
         this.mappedFractalsJobs = mappedFractalsJobs;
+        this.scheduleType = scheduleType;
     }
 
     public List<String> getFractalIds() {
@@ -62,4 +65,6 @@ public class JobExecutionMessage extends BasicMessage {
     public Map<FractalIdJob, FractalIdJob> getMappedFractalsJobs() {
         return mappedFractalsJobs;
     }
+
+    public JobScheduleType getScheduleType() { return scheduleType; }
 }

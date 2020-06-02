@@ -36,6 +36,7 @@ public class JobExecutionHandler implements MessageHandler {
         Job job = jobExecutionMessage.getJob();
         int currentLevel = jobExecutionMessage.getLevel();
         Map<FractalIdJob, FractalIdJob> mappedFractalJobs = jobExecutionMessage.getMappedFractalsJobs();
+        JobScheduleType scheduleType = jobExecutionMessage.getScheduleType();
         AppConfig.chordState.setServentJobs(jobExecutionMessage.getServentJobsMap());
 
         // if I am not intended final receiver then just pass message further
@@ -44,7 +45,7 @@ public class JobExecutionHandler implements MessageHandler {
             JobExecutionMessage jem = new JobExecutionMessage(AppConfig.myServentInfo.getListenerPort(),
                     nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(), nextServent.getIpAddress(),
                     fractalIds, pointList, job, AppConfig.chordState.getServentJobs(), currentLevel, receiverId,
-                    mappedFractalJobs);
+                    mappedFractalJobs, scheduleType);
             MessageUtil.sendMessage(jem);
             return;
         }
@@ -93,6 +94,7 @@ public class JobExecutionHandler implements MessageHandler {
                 }
             }
 
+            AppConfig.chordState.addNewJob(job);
             JobExecution jobExecution = new JobExecution(job.getName(), myNewFractalID, job.getProportion(),
                     job.getWidth(), job.getHeight(), pointList);
             jobExecution.getComputedPoints().addAll(AppConfig.chordState.getReceivedComputedPoints());
@@ -127,7 +129,7 @@ public class JobExecutionHandler implements MessageHandler {
             JobExecutionMessage jem = new JobExecutionMessage(AppConfig.myServentInfo.getListenerPort(),
                     receiverServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(), receiverServent.getIpAddress(),
                     partialFractalIds, regionPoints, job, AppConfig.chordState.getServentJobs(), level, finalReceiverId,
-                    mappedFractalJobs);
+                    mappedFractalJobs, scheduleType);
             MessageUtil.sendMessage(jem);
         }
     }

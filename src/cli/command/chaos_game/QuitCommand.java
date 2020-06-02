@@ -1,6 +1,8 @@
 package cli.command.chaos_game;
 
 import app.AppConfig;
+import app.models.JobExecution;
+import app.models.Point;
 import cli.CLIParser;
 import cli.command.CLICommand;
 import servent.SimpleServentListener;
@@ -10,6 +12,8 @@ import servent.message.util.MessageUtil;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class QuitCommand implements CLICommand {
 
@@ -30,10 +34,27 @@ public class QuitCommand implements CLICommand {
     public void execute(String args) {
         // inform successor so that it can delete you if you are not only node in the system
         if (AppConfig.chordState.getAllNodeIdInfoMap().size() > 1) {
-            QuitMessage quitMessage = new QuitMessage(AppConfig.myServentInfo.getListenerPort(),
-                    AppConfig.chordState.getNextNodePort(),
-                    AppConfig.myServentInfo.getIpAddress(),
-                    AppConfig.chordState.getNextNodeIpAddress(), AppConfig.myServentInfo.getId());
+
+            QuitMessage quitMessage;
+            if (AppConfig.chordState.getExecutionJob() != null) { // add my computed data to message if I am executing
+                JobExecution je = AppConfig.chordState.getExecutionJob();
+                String myJobName = je.getJobName();
+                String myFractalId = je.getFractalId();
+                List<Point> myComputedPoints = new ArrayList<>(je.getComputedPoints());
+
+                quitMessage = new QuitMessage(AppConfig.myServentInfo.getListenerPort(),
+                        AppConfig.chordState.getNextNodePort(),
+                        AppConfig.myServentInfo.getIpAddress(),
+                        AppConfig.chordState.getNextNodeIpAddress(), AppConfig.myServentInfo.getId(),
+                        myJobName, myFractalId, myComputedPoints);
+
+                je.stop();
+            } else {
+                quitMessage = new QuitMessage(AppConfig.myServentInfo.getListenerPort(),
+                        AppConfig.chordState.getNextNodePort(),
+                        AppConfig.myServentInfo.getIpAddress(),
+                        AppConfig.chordState.getNextNodeIpAddress(), AppConfig.myServentInfo.getId());
+            }
             MessageUtil.sendMessage(quitMessage);
         }
 
