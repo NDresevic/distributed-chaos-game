@@ -10,6 +10,10 @@ import java.util.concurrent.Executors;
 import app.AppConfig;
 import app.Cancellable;
 import servent.handler.*;
+import servent.handler.chaos_game.*;
+import servent.handler.chord.PutHandler;
+import servent.handler.chord.SorryHandler;
+import servent.handler.chord.TellGetHandler;
 import servent.message.Message;
 import servent.message.util.MessageUtil;
 
@@ -110,6 +114,9 @@ public class SimpleServentListener implements Runnable, Cancellable {
 					break;
 				case IDLE:
 					messageHandler = new IdleHandler(clientMessage);
+					break;
+				case COMPUTED_POINTS:
+					messageHandler = new ComputedPointsHandler(clientMessage);
 					break;
 				}
 				

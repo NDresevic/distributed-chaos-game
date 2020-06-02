@@ -160,7 +160,6 @@ public class AppConfig {
 
 				Job job = new Job(jobName, pointsCount, proportion, width, height, points);
 				myServentInfo.addJob(job);
-				AppConfig.chordState.addNewJob(job);
 			} catch (NumberFormatException e) {
 				timestampedErrorPrint("Problem reading integer or double properties for the job. Exiting...");
 				System.exit(0);

@@ -5,14 +5,11 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import app.models.FractalIdJob;
-import app.models.Job;
-import app.models.JobExecution;
-import app.models.ServentInfo;
-import servent.message.AskGetMessage;
-import servent.message.PutMessage;
+import app.models.*;
+import servent.message.chaos_game.AskGetMessage;
+import servent.message.chord.PutMessage;
 import servent.message.WelcomeMessage;
 import servent.message.util.MessageUtil;
 
@@ -55,11 +52,13 @@ public class ChordState {
 	private HashMap<Integer, ServentInfo> allNodeIdInfoMap;
 
 	private JobExecution executionJob;
+	private List<Point> receivedComputedPoints = new ArrayList<>();
+	private AtomicInteger receivedComputedPointsMessagesCount = new AtomicInteger(0);
+	private AtomicInteger expectedComputedPointsMessagesCount = new AtomicInteger(0);
 
 	// [id -> fractalId + job]
 	private Map<Integer, FractalIdJob> serventJobs;
-	private List<Job> allJobs = new ArrayList<>();
-	private int activeJobsCount = 0;
+	private List<Job> activeJobsList = new ArrayList<>();
 
 	private Map<Integer, Integer> valueMap;
 	
@@ -377,6 +376,8 @@ public class ChordState {
 	}
 
 	public void setExecutionJob(JobExecution executionJob) {
+		receivedComputedPoints.clear();
+		receivedComputedPointsMessagesCount.set(0);
 		this.executionJob = executionJob;
 	}
 
@@ -385,7 +386,7 @@ public class ChordState {
 	}
 
 	public int getActiveJobsCount() {
-		return activeJobsCount;
+		return activeJobsList.size();
 	}
 
 	public void setServentJobs(Map<Integer, FractalIdJob> serventJobs) {
@@ -421,9 +422,9 @@ public class ChordState {
 	}
 
 	public void removeJob(String jobName) {
-		for (Job job: allJobs) {
+		for (Job job: activeJobsList) {
 			if (job.getName().equals(jobName)) {
-				allJobs.remove(job);
+				activeJobsList.remove(job);
 				break;
 			}
 		}
@@ -442,11 +443,38 @@ public class ChordState {
 //		AppConfig.timestampedStandardPrint(serventJobs.toString());
 	}
 
+	public List<Job> getActiveJobsList() {
+		return activeJobsList;
+	}
+
 	public boolean addNewJob(Job job) {
-		if (!allJobs.contains(job)) {
-			allJobs.add(job);
+		if (!activeJobsList.contains(job)) {
+			activeJobsList.add(job);
 			return true;
 		}
 		return false;
+	}
+
+	public void resetAfterReceivedComputedPoints() {
+		receivedComputedPoints.clear();
+		receivedComputedPointsMessagesCount.set(0);
+		expectedComputedPointsMessagesCount.set(0);
+	}
+
+	public void addComputedPoints(List<Point> newPoints) {
+		receivedComputedPoints.addAll(newPoints);
+		receivedComputedPointsMessagesCount.getAndIncrement();
+	}
+
+	public AtomicInteger getReceivedComputedPointsMessagesCount() {
+		return receivedComputedPointsMessagesCount;
+	}
+
+	public AtomicInteger getExpectedComputedPointsMessagesCount() {
+		return expectedComputedPointsMessagesCount;
+	}
+
+	public List<Point> getReceivedComputedPoints() {
+		return receivedComputedPoints;
 	}
 }

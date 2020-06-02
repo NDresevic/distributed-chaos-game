@@ -32,7 +32,7 @@ public class JobExecution implements Runnable, Cancellable {
 
     @Override
     public void run() {
-        AppConfig.timestampedStandardPrint("Computing points...");
+        AppConfig.timestampedStandardPrint("Computing points for \'" + jobName + "\'...");
         while (working) {
             computedPoints.add(computeNewPoint());
             try {
@@ -66,8 +66,6 @@ public class JobExecution implements Runnable, Cancellable {
     }
 
     public List<Point> getComputedPoints() { return computedPoints; }
-
-    public boolean isWorking() { return working; }
 
     public double getProportion() {
         return proportion;

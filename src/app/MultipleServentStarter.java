@@ -12,7 +12,7 @@ import java.util.Scanner;
  * To use it, invoke startServentTest with a directory name as parameter.
  * This directory should include:
  * <ul>
- * <li>A <code>servent_list.properties</code> file (explained in {@link AppConfig} class</li>
+ * <li>A <code>bootstrap.properties</code> file (explained in {@link AppConfig} class</li>
  * <li>A directory called <code>output</code> </li>
  * <li>A directory called <code>error</code> </li>
  * <li>A directory called <code>input</code> with text files called
@@ -60,18 +60,19 @@ public class MultipleServentStarter {
 	
 	/**
 	 * The parameter for this function should be the name of a directory that
-	 * contains a servent_list.properties file which will describe our distributed system.
+	 * contains a bootstrap.properties file which will describe our distributed system.
 	 */
 	private static void startServentTest(String testName) {
 		List<Process> serventProcesses = new ArrayList<>();
 		
-		AppConfig.readBootstrapConfig(testName+"/servent_list.properties");
+		AppConfig.readBootstrapConfig(testName+"/bootstrap.properties");
 		
-		AppConfig.timestampedStandardPrint("Starting multiple servent runner. "
-				+ "If servents do not finish on their own, type \"stop\" to finish them");
+		AppConfig.timestampedStandardPrint("Starting bootstrap server. "
+				+ "Error and output logs are redirected to files, type \'stop\' to end bootstrap.");
 		
 		Process bsProcess = null;
-		ProcessBuilder bsBuilder = new ProcessBuilder("java", "-cp", "bin/", "app.BootstrapServer", String.valueOf(AppConfig.BOOTSTRAP_PORT));
+		ProcessBuilder bsBuilder = new ProcessBuilder("java", "-cp", "bin/", "app.BootstrapServer",
+				String.valueOf(AppConfig.BOOTSTRAP_PORT));
 		try {
 			//We use files to read and write.
 			//System.out, System.err and System.in will point to these files.
@@ -102,7 +103,6 @@ public class MultipleServentStarter {
 			}
 		}
 		
-		AppConfig.timestampedStandardPrint("All servent processes finished. Type \"stop\" to halt bootstrap.");
 		try {
 			bsProcess.waitFor();
 		} catch (InterruptedException e) {
@@ -111,8 +111,6 @@ public class MultipleServentStarter {
 	}
 	
 	public static void main(String[] args) {
-		startServentTest("chord");
-		
+		startServentTest("chaos-game");
 	}
-
 }

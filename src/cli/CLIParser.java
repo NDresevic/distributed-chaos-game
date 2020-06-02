@@ -7,6 +7,11 @@ import java.util.Scanner;
 import app.AppConfig;
 import app.Cancellable;
 import cli.command.*;
+import cli.command.chaos_game.*;
+import cli.command.chord.DHTGetCommand;
+import cli.command.chord.DHTPutCommand;
+import cli.command.chord.InfoCommand;
+import cli.command.chord.PauseCommand;
 import servent.SimpleServentListener;
 
 /**
