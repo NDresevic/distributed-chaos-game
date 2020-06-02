@@ -93,7 +93,8 @@ public class ChordState {
 		// set as predecessor the node who sent the message
 		predecessorInfo =  new ServentInfo(welcomeMsg.getSenderIpAddress(), welcomeMsg.getSenderPort());
 		// set as first successor servent with id 0, for sending of update message
-		successorTable[0] = new ServentInfo("localhost", welcomeMsg.getFirstServentPort());
+		String[] firstServentInfo = welcomeMsg.getFirstServentIpAddressPort().split(":");
+		successorTable[0] = new ServentInfo(firstServentInfo[0], Integer.parseInt(firstServentInfo[1]));
 
 		allNodeIdInfoMap.put(AppConfig.myServentInfo.getId(), AppConfig.myServentInfo);
 		AppConfig.timestampedStandardPrint(allNodeIdInfoMap.toString());
@@ -105,8 +106,9 @@ public class ChordState {
 			Socket bsSocket = new Socket(AppConfig.BOOTSTRAP_IP_ADDRESS, AppConfig.BOOTSTRAP_PORT);
 			
 			PrintWriter bsWriter = new PrintWriter(bsSocket.getOutputStream());
-			bsWriter.write("New\n" + AppConfig.myServentInfo.getListenerPort() + "\n");
-			
+			bsWriter.write("New\n" +
+					AppConfig.myServentInfo.getIpAddress() + "\n" +
+					AppConfig.myServentInfo.getListenerPort() + "\n");
 			bsWriter.flush();
 			bsSocket.close();
 		} catch (UnknownHostException e) {

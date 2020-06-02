@@ -13,7 +13,7 @@ import java.util.Scanner;
 public class BootstrapServer {
 
 	private volatile boolean working = true;
-	private List<Integer> activeServents;
+	private List<String> activeServents;
 	
 	private class CLIWorker implements Runnable {
 		@Override
@@ -73,22 +73,25 @@ public class BootstrapServer {
 				 * or -1 if he is the first one.
 				 */
 				if (message.equals("Hail")) {
+					String newServentIp = socketScanner.nextLine();
 					int newServentPort = socketScanner.nextInt();
 
-					AppConfig.timestampedStandardPrint("Got " + newServentPort);
+					AppConfig.timestampedStandardPrint("Got " + newServentIp + ":" + newServentPort);
 					PrintWriter socketWriter = new PrintWriter(newServentSocket.getOutputStream());
 					
 					if (activeServents.size() == 0) {
-						socketWriter.write(String.valueOf(-1) + "\n");
-						socketWriter.write(String.valueOf(-1) + "\n");
-						AppConfig.timestampedStandardPrint("Adding: " + newServentPort);
-						activeServents.add(newServentPort); //first one doesn't need to confirm
+						socketWriter.write("-1\n");
+						socketWriter.write("-1\n");
+						String newServent = newServentIp + ":" + newServentPort;
+
+						AppConfig.timestampedStandardPrint("Adding: " + newServent);
+						activeServents.add(newServent); //first one doesn't need to confirm
 					} else {
-						// send last servent port
-						int lastServent = activeServents.get(activeServents.size() - 1);
+						// send last servent
+						String lastServent = activeServents.get(activeServents.size() - 1);
 						socketWriter.write(lastServent + "\n");
-						// send port of 0 servent
-						int fisrtServent = activeServents.get(0);
+						// send info of 0 servent
+						String fisrtServent = activeServents.get(0);
 						socketWriter.write(fisrtServent + "\n");
 					}
 					
@@ -98,16 +101,20 @@ public class BootstrapServer {
 					/**
 					 * When a servent is confirmed not to be a collider, we add him to the list.
 					 */
+					String newServentIp = socketScanner.nextLine();
 					int newServentPort = socketScanner.nextInt();
+					String newServent = newServentIp + ":" + newServentPort;
 
-					AppConfig.timestampedStandardPrint("Adding: " + newServentPort);
-					activeServents.add(newServentPort);
+					AppConfig.timestampedStandardPrint("Adding: " + newServent);
+					activeServents.add(newServent);
 					newServentSocket.close();
 				} else if (message.equals("Quit")) {
+					String serventIp = socketScanner.nextLine();
 					int serventPort = socketScanner.nextInt();
+					String quitterServent = serventIp + ":" + serventPort;
 
-					AppConfig.timestampedStandardPrint("Removing: " + serventPort);
-					activeServents.remove((Integer) serventPort);
+					AppConfig.timestampedStandardPrint("Removing: " + quitterServent);
+					activeServents.remove(quitterServent);
 					newServentSocket.close();
 				}
 			} catch (IOException e) {

@@ -28,12 +28,12 @@ public class NewNodeHandler implements MessageHandler {
 		NewNodeMessage newNodeMessage = (NewNodeMessage) clientMessage;
 		int newNodePort = newNodeMessage.getSenderPort();
 		String newNodeIpAddress = newNodeMessage.getSenderIpAddress();
-		int firstServentPort = newNodeMessage.getFirstServentPort();
+		String firstServentInfo = newNodeMessage.getFirstServentIpAddressPort();
 
 		int hisId = AppConfig.myServentInfo.getId() + 1;
 		Map<Integer, Integer> hisValues = new HashMap<>();
 		WelcomeMessage wm = new WelcomeMessage(AppConfig.myServentInfo.getListenerPort(), newNodePort,
-				AppConfig.myServentInfo.getIpAddress(), newNodeIpAddress, hisId, firstServentPort, hisValues);
+				AppConfig.myServentInfo.getIpAddress(), newNodeIpAddress, hisId, firstServentInfo, hisValues);
 		MessageUtil.sendMessage(wm);
 	}
 

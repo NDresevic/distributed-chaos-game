@@ -36,7 +36,5 @@ public class StartCommand implements CLICommand {
         // compute number of servents needed for each job
         AppConfig.chordState.addNewJob(job);
         JobUtil.executeJobScheduling(serventCount, JobScheduleType.JOB_ADDED);
-
-        AppConfig.timestampedStandardPrint("AKTIVNI POSLOVI " + AppConfig.chordState.getActiveJobsList());
     }
 }

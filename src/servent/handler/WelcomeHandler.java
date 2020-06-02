@@ -25,7 +25,7 @@ public class WelcomeHandler implements MessageHandler {
 			AppConfig.timestampedErrorPrint("Welcome handler got a message that is not WELCOME");
 			return;
 		}
-		WelcomeMessage welcomeMsg = (WelcomeMessage)clientMessage;
+		WelcomeMessage welcomeMsg = (WelcomeMessage) clientMessage;
 		int myId = welcomeMsg.getId();
 		AppConfig.myServentInfo.setId(myId);
 		AppConfig.chordState.init(welcomeMsg);
