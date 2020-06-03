@@ -118,6 +118,9 @@ public class SimpleServentListener implements Runnable, Cancellable {
 				case COMPUTED_POINTS:
 					messageHandler = new ComputedPointsHandler(clientMessage);
 					break;
+				case JOB_SCHEDULE:
+					messageHandler = new JobScheduleHandler(clientMessage);
+					break;
 				}
 				
 				threadPool.submit(messageHandler);

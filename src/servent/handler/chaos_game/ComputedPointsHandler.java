@@ -1,6 +1,7 @@
 package servent.handler.chaos_game;
 
 import app.AppConfig;
+import app.models.JobScheduleType;
 import app.models.Point;
 import app.models.ServentInfo;
 import servent.handler.MessageHandler;
@@ -43,7 +44,7 @@ public class ComputedPointsHandler implements MessageHandler {
             return;
         }
 
-        AppConfig.timestampedStandardPrint("Received computed points for {fractalID=" + fractalId + ", jobName=" + jobName + "}");
+        AppConfig.timestampedStandardPrint("Received computed points from {fractalID=" + fractalId + ", jobName=" + jobName + "}");
         AppConfig.chordState.addComputedPoints(computedPoints);
     }
 }

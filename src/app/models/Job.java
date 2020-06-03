@@ -25,10 +25,6 @@ public class Job implements Serializable {
         this.points = points;
     }
 
-    public Job(String name) {
-        this(name, -1, -1, -1, -1, new ArrayList<>());
-    }
-
     public String getName() {
         return name;
     }

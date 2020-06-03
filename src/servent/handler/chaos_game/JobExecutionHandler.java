@@ -2,6 +2,7 @@ package servent.handler.chaos_game;
 
 import app.AppConfig;
 import app.models.*;
+import app.util.GeometryUtil;
 import app.util.JobUtil;
 import servent.handler.MessageHandler;
 import servent.message.chaos_game.ComputedPointsMessage;
@@ -56,32 +57,22 @@ public class JobExecutionHandler implements MessageHandler {
         // no further splitting, job execution can start
         if (fractalIds.size() == 1) {
 
-            // send my computed points if needed
             if (AppConfig.chordState.getExecutionJob() != null) {   // I am already executing a job
-                JobExecution je = AppConfig.chordState.getExecutionJob();
-                FractalIdJob myFractalJob = new FractalIdJob(je.getFractalId(), je.getJobName());
-
-                if (mappedFractalJobs.containsKey(myFractalJob)) {
-                    FractalIdJob hisFractalJob = mappedFractalJobs.get(myFractalJob);
-                    List<Point> myComputedPoints = je.getComputedPoints();
-                    int dataReceiverId = AppConfig.chordState.getIdForFractalIDAndJob(hisFractalJob.getFractalId(), hisFractalJob.getJobName());
-                    ServentInfo nextDataServent = AppConfig.chordState.getNextNodeForServentId(dataReceiverId);
-
-                    ComputedPointsMessage cpm = new ComputedPointsMessage(AppConfig.myServentInfo.getListenerPort(),
-                            nextDataServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
-                            nextDataServent.getIpAddress(), myFractalJob.getJobName(), myFractalJob.getFractalId(),
-                            myComputedPoints, dataReceiverId);
-                    MessageUtil.sendMessage(cpm);
-                }
+                sendMyCurrentData(mappedFractalJobs, scheduleType);
             }
 
             String myNewFractalID = fractalIds.get(0);
             FractalIdJob myNewFractalJob = new FractalIdJob(myNewFractalID, job.getName());
-            // compute how many data messages I need to receive from other servents
-            for (Map.Entry<FractalIdJob, FractalIdJob> entry: mappedFractalJobs.entrySet()) {
-                if (entry.getValue().equals(myNewFractalJob)) {
-                    AppConfig.chordState.getExpectedComputedPointsMessagesCount().getAndIncrement();
+            if (scheduleType.equals(JobScheduleType.JOB_ADDED) || scheduleType.equals(JobScheduleType.SERVENT_REMOVED)) {
+
+                // compute how many data messages I need to receive from other servents
+                for (Map.Entry<FractalIdJob, FractalIdJob> entry: mappedFractalJobs.entrySet()) {
+                    if (entry.getValue().equals(myNewFractalJob)) {
+                        AppConfig.chordState.getExpectedComputedPointsMessagesCount().getAndIncrement();
+                    }
                 }
+            } else if (mappedFractalJobs.containsKey(myNewFractalJob)) {
+                AppConfig.chordState.getExpectedComputedPointsMessagesCount().set(1);
             }
 
             // wait for others to send me data
@@ -97,7 +88,15 @@ public class JobExecutionHandler implements MessageHandler {
             AppConfig.chordState.addNewJob(job);
             JobExecution jobExecution = new JobExecution(job.getName(), myNewFractalID, job.getProportion(),
                     job.getWidth(), job.getHeight(), pointList);
-            jobExecution.getComputedPoints().addAll(AppConfig.chordState.getReceivedComputedPoints());
+
+            List<Point> receivedComputedPoints = new ArrayList<>(AppConfig.chordState.getReceivedComputedPoints());
+            if (scheduleType.equals(JobScheduleType.JOB_ADDED) || scheduleType.equals(JobScheduleType.SERVENT_REMOVED)) {
+                jobExecution.getComputedPoints().addAll(receivedComputedPoints);
+            } else {
+                List<Point> insidePoints = GeometryUtil.getPointsInsidePolygon(pointList, receivedComputedPoints);
+                jobExecution.getComputedPoints().addAll(insidePoints);
+            }
+
             AppConfig.chordState.setExecutionJob(jobExecution);
             Thread t = new Thread(jobExecution);
             t.start();
@@ -132,5 +131,39 @@ public class JobExecutionHandler implements MessageHandler {
                     mappedFractalJobs, scheduleType);
             MessageUtil.sendMessage(jem);
         }
+    }
+
+    static void sendMyCurrentData(Map<FractalIdJob, FractalIdJob> mappedFractalJobs, JobScheduleType scheduleType) {
+        JobExecution je = AppConfig.chordState.getExecutionJob();
+        List<Point> myComputedPoints = new ArrayList<>(je.getComputedPoints());
+        FractalIdJob myOldFractalJob = new FractalIdJob(je.getFractalId(), je.getJobName());
+
+        if (mappedFractalJobs.containsKey(myOldFractalJob) &&
+                (scheduleType.equals(JobScheduleType.JOB_ADDED) ||
+                        scheduleType.equals(JobScheduleType.SERVENT_REMOVED))) {
+
+            sendComputedPointsMessage(myComputedPoints, myOldFractalJob, mappedFractalJobs.get(myOldFractalJob));
+        } else {
+            for (Map.Entry<FractalIdJob, FractalIdJob> entry: mappedFractalJobs.entrySet()) {
+                if (entry.getValue().equals(myOldFractalJob)) {
+                    sendComputedPointsMessage(myComputedPoints, myOldFractalJob, entry.getKey());
+                }
+            }
+        }
+
+        je.stop();
+    }
+
+    private static void sendComputedPointsMessage(List<Point> computedPoints, FractalIdJob myOldFractalJob,
+                                           FractalIdJob receiverFractalJob) {
+        int receiverId = AppConfig.chordState.getIdForFractalIDAndJob(receiverFractalJob.getFractalId(),
+                receiverFractalJob.getJobName());
+        ServentInfo intercessor = AppConfig.chordState.getNextNodeForServentId(receiverId);
+
+        ComputedPointsMessage cpm = new ComputedPointsMessage(AppConfig.myServentInfo.getListenerPort(),
+                intercessor.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
+                intercessor.getIpAddress(), myOldFractalJob.getJobName(), myOldFractalJob.getFractalId(),
+                computedPoints, receiverId);
+        MessageUtil.sendMessage(cpm);
     }
 }

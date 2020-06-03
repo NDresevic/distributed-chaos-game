@@ -31,9 +31,9 @@ public class WelcomeHandler implements MessageHandler {
 		AppConfig.chordState.init(welcomeMsg);
 
 		Map<Integer, ServentInfo> nodesMap = new HashMap<>(AppConfig.chordState.getAllNodeIdInfoMap());
-		UpdateMessage um = new UpdateMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getNextNodePort(),
-				AppConfig.myServentInfo.getIpAddress(), AppConfig.chordState.getNextNodeIpAddress(), myId,
-				nodesMap);
+		UpdateMessage um = new UpdateMessage(AppConfig.myServentInfo.getListenerPort(),
+				AppConfig.chordState.getNextNodePort(), AppConfig.myServentInfo.getIpAddress(),
+				AppConfig.chordState.getNextNodeIpAddress(), nodesMap);
 		MessageUtil.sendMessage(um);
 	}
 }

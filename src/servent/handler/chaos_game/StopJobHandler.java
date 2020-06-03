@@ -1,12 +1,18 @@
 package servent.handler.chaos_game;
 
 import app.AppConfig;
+import app.models.FractalIdJob;
 import app.models.JobExecution;
+import app.models.JobScheduleType;
+import app.models.ServentInfo;
 import servent.handler.MessageHandler;
 import servent.message.Message;
 import servent.message.MessageType;
+import servent.message.chaos_game.JobScheduleMessage;
 import servent.message.chaos_game.StopJobMessage;
 import servent.message.util.MessageUtil;
+
+import java.util.Map;
 
 public class StopJobHandler implements MessageHandler {
 
@@ -39,6 +45,10 @@ public class StopJobHandler implements MessageHandler {
         if (stopJobMessage.getSenderPort() == AppConfig.myServentInfo.getListenerPort() &&
                 stopJobMessage.getSenderIpAddress().equals(AppConfig.myServentInfo.getIpAddress())) {
             AppConfig.timestampedStandardPrint("Stop job message for job \'" + jobName + "\' made a circle.");
+
+            if (AppConfig.chordState.getActiveJobsCount() > 0) {        // need to reschedule jobs
+                sendReschedulingMessage(JobScheduleType.JOB_REMOVED);
+            }
             return;
         }
 
@@ -49,5 +59,20 @@ public class StopJobHandler implements MessageHandler {
                 AppConfig.chordState.getNextNodeIpAddress(),
                 jobName);
         MessageUtil.sendMessage(message);
+    }
+
+    public static boolean sendReschedulingMessage(JobScheduleType scheduleType) {
+        for (Map.Entry<Integer, FractalIdJob> entry: AppConfig.chordState.getServentJobs().entrySet()) {
+            int executorId = entry.getKey();
+            ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(executorId);
+
+            JobScheduleMessage jsm = new JobScheduleMessage(AppConfig.myServentInfo.getListenerPort(),
+                    nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
+                    nextServent.getIpAddress(), scheduleType, executorId);
+            MessageUtil.sendMessage(jsm);
+
+            return true;
+        }
+        return false;
     }
 }

@@ -1,9 +1,12 @@
 package servent.message.chaos_game;
 
 import app.models.FractalIdJob;
+import app.models.Job;
+import app.models.JobScheduleType;
 import servent.message.BasicMessage;
 import servent.message.MessageType;
 
+import java.util.List;
 import java.util.Map;
 
 public class IdleMessage extends BasicMessage {
@@ -13,14 +16,19 @@ public class IdleMessage extends BasicMessage {
     private Map<Integer, FractalIdJob> serventJobsMap;
     private int finalReceiverId;
     private Map<FractalIdJob, FractalIdJob> mappedFractalsJobs;
+    private List<Job> activeJobs;
+    private JobScheduleType scheduleType;
 
     public IdleMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
                        Map<Integer, FractalIdJob> serventJobsMap, int finalReceiverId,
-                       Map<FractalIdJob, FractalIdJob> mappedFractalsJobs) {
+                       Map<FractalIdJob, FractalIdJob> mappedFractalsJobs, List<Job> activeJobs,
+                       JobScheduleType scheduleType) {
         super(MessageType.IDLE, senderPort, receiverPort, senderIpAddress, receiverIpAddress);
         this.serventJobsMap = serventJobsMap;
         this.finalReceiverId = finalReceiverId;
         this.mappedFractalsJobs = mappedFractalsJobs;
+        this.activeJobs = activeJobs;
+        this.scheduleType = scheduleType;
     }
 
     public Map<Integer, FractalIdJob> getServentJobsMap() { return serventJobsMap; }
@@ -28,4 +36,8 @@ public class IdleMessage extends BasicMessage {
     public int getFinalReceiverId() { return finalReceiverId; }
 
     public Map<FractalIdJob, FractalIdJob> getMappedFractalsJobs() { return mappedFractalsJobs; }
+
+    public List<Job> getActiveJobs() { return activeJobs; }
+
+    public JobScheduleType getScheduleType() { return scheduleType; }
 }

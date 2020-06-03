@@ -1,13 +1,21 @@
 package servent.handler;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import app.AppConfig;
+import app.models.FractalIdJob;
+import app.models.Job;
+import app.models.JobScheduleType;
 import app.models.ServentInfo;
+import app.util.JobUtil;
+import servent.handler.chaos_game.StopJobHandler;
 import servent.message.Message;
 import servent.message.MessageType;
 import servent.message.UpdateMessage;
+import servent.message.chaos_game.JobScheduleMessage;
 import servent.message.util.MessageUtil;
 
 public class UpdateHandler implements MessageHandler {
@@ -26,17 +34,33 @@ public class UpdateHandler implements MessageHandler {
 		}
 
 		UpdateMessage updateMessage = (UpdateMessage) clientMessage;
-		Map<Integer, ServentInfo> allNodes = new HashMap<>(updateMessage.getNodesMap());
+		Map<Integer, ServentInfo> allNodes = updateMessage.getNodesMap();
 		allNodes.put(AppConfig.myServentInfo.getId(), AppConfig.myServentInfo);
 		AppConfig.chordState.addNodes(allNodes);
+		Map<Integer, FractalIdJob> serventJobsMap = updateMessage.getServentJobsMap();
+		List<Job> activeJobs = updateMessage.getActiveJobs();
 
-		// if I didn't send the message (it didn't make a circle) send to my first successor
-		if (updateMessage.getSenderPort() != AppConfig.myServentInfo.getListenerPort()) {
-			UpdateMessage nextUpdate = new UpdateMessage(clientMessage.getSenderPort(), AppConfig.chordState.getNextNodePort(),
-					clientMessage.getSenderIpAddress(), AppConfig.chordState.getNextNodeIpAddress(),
-					AppConfig.myServentInfo.getId(), AppConfig.chordState.getAllNodeIdInfoMap());
-			MessageUtil.sendMessage(nextUpdate);
+		if (updateMessage.getSenderIpAddress().equals(AppConfig.myServentInfo.getIpAddress()) &&
+				updateMessage.getSenderPort() == AppConfig.myServentInfo.getListenerPort()) { // update made a circle, came to the one who entered
+
+			AppConfig.timestampedStandardPrint("Update message made a circle.");
+			AppConfig.chordState.setServentJobs(serventJobsMap);	// set current job schedule
+			AppConfig.chordState.addNewJobs(activeJobs);	// add all active jobs
+
+			if (AppConfig.chordState.getActiveJobsCount() > 0) {        // need to reschedule jobs
+				StopJobHandler.sendReschedulingMessage(JobScheduleType.SERVENT_ADDED);
+			}
+			return;
 		}
+
+		serventJobsMap = new HashMap<>(AppConfig.chordState.getServentJobs());
+		activeJobs = new ArrayList<>(AppConfig.chordState.getActiveJobsList());
+		// send to my first successor
+		UpdateMessage nextUpdate = new UpdateMessage(updateMessage.getSenderPort(),
+				AppConfig.chordState.getNextNodePort(), updateMessage.getSenderIpAddress(),
+				AppConfig.chordState.getNextNodeIpAddress(), new HashMap<>(AppConfig.chordState.getAllNodeIdInfoMap()),
+				serventJobsMap, activeJobs);
+		MessageUtil.sendMessage(nextUpdate);
 	}
 
 }

@@ -122,9 +122,20 @@ public class JobUtil {
                 }
                 return result;
 
-            // todo: implement
             case JOB_REMOVED:
             case SERVENT_ADDED:
+                for (String newOne: newFractals) {
+                    if (oldFractals.size() == 1) {
+                        result.put(new FractalIdJob(newOne, jobName), new FractalIdJob(oldFractals.get(0), jobName));
+                        continue;
+                    }
+
+                    for (String oldOne: oldFractals) {
+                        if (newOne.startsWith(oldOne)) {
+                            result.put(new FractalIdJob(newOne, jobName), new FractalIdJob(oldOne, jobName));
+                        }
+                    }
+                }
                 return result;
         }
 
@@ -249,7 +260,8 @@ public class JobUtil {
 
                 IdleMessage idleMessage = new IdleMessage(AppConfig.myServentInfo.getListenerPort(),
                         nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
-                        nextServent.getIpAddress(), AppConfig.chordState.getServentJobs(), serventId, mappedFractals);
+                        nextServent.getIpAddress(), new HashMap<>(AppConfig.chordState.getServentJobs()),
+                        serventId, mappedFractals, new ArrayList<>(AppConfig.chordState.getActiveJobsList()), scheduleType);
                 MessageUtil.sendMessage(idleMessage);
             }
         }

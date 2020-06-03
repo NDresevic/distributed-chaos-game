@@ -3,7 +3,6 @@ package servent.handler.chaos_game;
 import app.AppConfig;
 import app.models.*;
 import servent.handler.MessageHandler;
-import servent.message.chaos_game.ComputedPointsMessage;
 import servent.message.chaos_game.IdleMessage;
 import servent.message.Message;
 import servent.message.MessageType;
@@ -15,9 +14,23 @@ import java.util.Map;
 public class IdleHandler implements MessageHandler {
 
     private Message clientMessage;
+    private IdleMessage idleMessage;
+
+    private int receiverId;
+    private Map<Integer, FractalIdJob> serventJobsMap;
+    private Map<FractalIdJob, FractalIdJob> mappedFractalJobs;
+    private List<Job> activeJobs;
+    private JobScheduleType scheduleType;
 
     public IdleHandler(Message clientMessage) {
         this.clientMessage = clientMessage;
+
+        idleMessage = (IdleMessage) clientMessage;
+        receiverId = idleMessage.getFinalReceiverId();
+        serventJobsMap = idleMessage.getServentJobsMap();
+        mappedFractalJobs = idleMessage.getMappedFractalsJobs();
+        activeJobs = idleMessage.getActiveJobs();
+        scheduleType = idleMessage.getScheduleType();
     }
 
     @Override
@@ -27,49 +40,27 @@ public class IdleHandler implements MessageHandler {
             return;
         }
 
-        IdleMessage idleMessage = (IdleMessage) clientMessage;
-        int receiverId = idleMessage.getFinalReceiverId();
-        Map<Integer, FractalIdJob> serventJobsMap = idleMessage.getServentJobsMap();
-        Map<FractalIdJob, FractalIdJob> mappedFractalJobs = idleMessage.getMappedFractalsJobs();
-
-        // if I am not intended final receiver then just pass message further
-        if (receiverId != AppConfig.myServentInfo.getId()) {
-            ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(receiverId);
-
-            IdleMessage im = new IdleMessage(idleMessage.getSenderPort(), nextServent.getListenerPort(),
-                    idleMessage.getSenderIpAddress(), nextServent.getIpAddress(), serventJobsMap, receiverId,
-                    mappedFractalJobs);
-            MessageUtil.sendMessage(im);
+        if (receiverId != AppConfig.myServentInfo.getId()) {  // I am not intended receiver, forward message
+            this.forwardMessage();
             return;
         }
 
-        // send my previously computed points if needed
-        if (AppConfig.chordState.getExecutionJob() != null) {   // I am currently executing a job
-            JobExecution je = AppConfig.chordState.getExecutionJob();
-            FractalIdJob myFractalJob = new FractalIdJob(je.getFractalId(), je.getJobName());
-
-            if (mappedFractalJobs.containsKey(myFractalJob)) {
-                FractalIdJob hisFractalJob = mappedFractalJobs.get(myFractalJob);
-                List<Point> myComputedPoints = je.getComputedPoints();
-                int dataReceiverId = AppConfig.chordState.getIdForFractalIDAndJob(hisFractalJob.getFractalId(), hisFractalJob.getJobName());
-                ServentInfo nextDataServent = AppConfig.chordState.getNextNodeForServentId(dataReceiverId);
-
-                ComputedPointsMessage cpm = new ComputedPointsMessage(AppConfig.myServentInfo.getListenerPort(),
-                        nextDataServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
-                        nextDataServent.getIpAddress(), myFractalJob.getJobName(), myFractalJob.getFractalId(),
-                        myComputedPoints, dataReceiverId);
-                MessageUtil.sendMessage(cpm);
-            }
+        if (AppConfig.chordState.getExecutionJob() != null) {   // send my data if I was executing
+            JobExecutionHandler.sendMyCurrentData(mappedFractalJobs, scheduleType);
         }
 
         AppConfig.chordState.setServentJobs(serventJobsMap);
-        for (Map.Entry<Integer, FractalIdJob> entry: serventJobsMap.entrySet()) {
-            Job job = new Job(entry.getValue().getJobName());
-            if (!AppConfig.chordState.getActiveJobsList().contains(job)) {
-                AppConfig.chordState.addNewJob(job);
-            }
-        }
+        AppConfig.chordState.addNewJobs(activeJobs);
         AppConfig.chordState.resetAfterReceivedComputedPoints();
         AppConfig.timestampedStandardPrint("I am idle...");
+    }
+
+    private void forwardMessage() {
+        ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(receiverId);
+
+        IdleMessage im = new IdleMessage(idleMessage.getSenderPort(), nextServent.getListenerPort(),
+                idleMessage.getSenderIpAddress(), nextServent.getIpAddress(), serventJobsMap, receiverId,
+                mappedFractalJobs, activeJobs, scheduleType);
+        MessageUtil.sendMessage(im);
     }
 }

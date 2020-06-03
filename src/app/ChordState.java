@@ -472,6 +472,12 @@ public class ChordState {
 		return false;
 	}
 
+	public void addNewJobs(List<Job> jobs) {
+		for (Job job: jobs) {
+			addNewJob(job);
+		}
+	}
+
 	public void resetAfterReceivedComputedPoints() {
 		receivedComputedPoints.clear();
 		receivedComputedPointsMessagesCount.set(0);
