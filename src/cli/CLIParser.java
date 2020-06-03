@@ -37,6 +37,8 @@ public class CLIParser implements Runnable, Cancellable {
 	private volatile boolean working = true;
 	
 	private final List<CLICommand> commandList;
+
+	private Scanner scanner;
 	
 	public CLIParser(SimpleServentListener listener) {
 		this.commandList = new ArrayList<>();
@@ -47,7 +49,7 @@ public class CLIParser implements Runnable, Cancellable {
 		commandList.add(new DHTGetCommand());
 		commandList.add(new DHTPutCommand());
 		commandList.add(new QuitCommand(this, listener));
-		commandList.add(new StartCommand());
+		commandList.add(new StartCommand(this));
 		commandList.add(new ResultCommand());
 		commandList.add(new StopCommand());
 		commandList.add(new StatusCommand());
@@ -55,14 +57,14 @@ public class CLIParser implements Runnable, Cancellable {
 	
 	@Override
 	public void run() {
-		Scanner sc = new Scanner(System.in);
+		scanner = new Scanner(System.in);
 		
 		while (working) {
-			String commandLine = sc.nextLine();
+			String commandLine = scanner.nextLine();
 			
 			int spacePos = commandLine.indexOf(" ");
 			
-			String commandName = null;
+			String commandName;
 			String commandArgs = null;
 			if (spacePos != -1) {
 				commandName = commandLine.substring(0, spacePos);
@@ -85,8 +87,8 @@ public class CLIParser implements Runnable, Cancellable {
 				AppConfig.timestampedErrorPrint("Unknown command: " + commandName);
 			}
 		}
-		
-		sc.close();
+
+		scanner.close();
 	}
 	
 	@Override
@@ -94,4 +96,6 @@ public class CLIParser implements Runnable, Cancellable {
 		this.working = false;
 		
 	}
+
+	public Scanner getScanner() { return scanner; }
 }

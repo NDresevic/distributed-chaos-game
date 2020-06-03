@@ -1,10 +1,7 @@
 package servent.handler.chaos_game;
 
 import app.AppConfig;
-import app.models.FractalIdJob;
-import app.models.JobExecution;
-import app.models.Point;
-import app.models.ServentInfo;
+import app.models.*;
 import servent.handler.MessageHandler;
 import servent.message.chaos_game.ComputedPointsMessage;
 import servent.message.chaos_game.IdleMessage;
@@ -66,6 +63,12 @@ public class IdleHandler implements MessageHandler {
         }
 
         AppConfig.chordState.setServentJobs(serventJobsMap);
+        for (Map.Entry<Integer, FractalIdJob> entry: serventJobsMap.entrySet()) {
+            Job job = new Job(entry.getValue().getJobName());
+            if (!AppConfig.chordState.getActiveJobsList().contains(job)) {
+                AppConfig.chordState.addNewJob(job);
+            }
+        }
         AppConfig.chordState.resetAfterReceivedComputedPoints();
         AppConfig.timestampedStandardPrint("I am idle...");
     }

@@ -28,7 +28,7 @@ public class StopJobHandler implements MessageHandler {
 
         // if I am doing that job then stop
         JobExecution jobExecution = AppConfig.chordState.getExecutionJob();
-        if (jobExecution.getJobName().equals(jobName)) {
+        if (jobExecution != null && jobExecution.getJobName().equals(jobName)) {
             jobExecution.stop();
             AppConfig.chordState.setExecutionJob(null);
         }

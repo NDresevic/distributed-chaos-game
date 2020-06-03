@@ -1,6 +1,7 @@
 package app.models;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,6 +23,10 @@ public class Job implements Serializable {
         this.width = width;
         this.height = height;
         this.points = points;
+    }
+
+    public Job(String name) {
+        this(name, -1, -1, -1, -1, new ArrayList<>());
     }
 
     public String getName() {
