@@ -1,11 +1,11 @@
-package servent.handler.chaos_game;
+package servent.handler.chord;
 
 import java.util.Map;
 
 import app.AppConfig;
 import app.models.ServentInfo;
 import servent.handler.MessageHandler;
-import servent.message.chaos_game.AskGetMessage;
+import servent.message.chord.AskGetMessage;
 import servent.message.Message;
 import servent.message.MessageType;
 import servent.message.chord.TellGetMessage;

@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import app.models.*;
-import servent.message.chaos_game.AskGetMessage;
+import servent.message.chord.AskGetMessage;
 import servent.message.chord.PutMessage;
 import servent.message.WelcomeMessage;
 import servent.message.util.MessageUtil;

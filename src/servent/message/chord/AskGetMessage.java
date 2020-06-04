@@ -1,4 +1,4 @@
-package servent.message.chaos_game;
+package servent.message.chord;
 
 import servent.message.BasicMessage;
 import servent.message.MessageType;

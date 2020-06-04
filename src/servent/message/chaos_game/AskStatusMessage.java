@@ -14,7 +14,7 @@ public class AskStatusMessage extends BasicMessage {
     private String fractalId;
     private int version;
     // [jobName -> [fractalId -> number of drawn points]]
-    Map<String, Map<String, Integer>> resultMap;
+    private Map<String, Map<String, Integer>> resultMap;
     private int finalReceiverId;
 
     public AskStatusMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,

@@ -10,7 +10,7 @@ public class TellStatusMessage extends BasicMessage {
     private static final long serialVersionUID = 2057311911123502064L;
 
     // [jobName -> [fractalId -> number of drawn points]]
-    Map<String, Map<String, Integer>> resultMap;
+    private Map<String, Map<String, Integer>> resultMap;
     private int version;
     private int finalReceiverId;
 

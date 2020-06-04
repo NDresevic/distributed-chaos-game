@@ -9,7 +9,7 @@ public class JobScheduleMessage extends BasicMessage {
     private static final long serialVersionUID = 138036264911712177L;
 
     private JobScheduleType scheduleType;
-    int finalReceiverId;
+    private int finalReceiverId;
 
     public JobScheduleMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
                               JobScheduleType scheduleType, int finalReceiverId) {
