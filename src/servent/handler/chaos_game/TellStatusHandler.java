@@ -40,6 +40,7 @@ public class TellStatusHandler implements MessageHandler {
             return;
         }
 
+        AppConfig.lamportMutex.releaseMyCriticalSection();
         // print status
         StringBuilder result = new StringBuilder("STATUS: \n");
         for (Map.Entry<String, Map<String, Integer>> entry: resultMap.entrySet()) {

@@ -11,6 +11,7 @@ import app.models.*;
 import servent.message.chord.AskGetMessage;
 import servent.message.chord.PutMessage;
 import servent.message.WelcomeMessage;
+import servent.message.util.FifoSendWorker;
 import servent.message.util.MessageUtil;
 
 /**
@@ -50,6 +51,8 @@ public class ChordState {
 	
 	//we DO NOT use this to send messages, but only to construct the successor table
 	private HashMap<Integer, ServentInfo> allNodeIdInfoMap;
+
+	private Map<Integer, FifoSendWorker> fifoSendWorkerMap = new HashMap<>();
 
 	private JobExecution executionJob;
 	private List<Point> receivedComputedPoints = new ArrayList<>();
@@ -91,10 +94,10 @@ public class ChordState {
 	 */
 	public void init(WelcomeMessage welcomeMsg) {
 		// set as predecessor the node who sent the message
-		predecessorInfo =  new ServentInfo(welcomeMsg.getSenderIpAddress(), welcomeMsg.getSenderPort());
+		predecessorInfo =  new ServentInfo(welcomeMsg.getSenderIpAddress(), welcomeMsg.getSenderPort(), welcomeMsg.getSenderPort() + 10);
 		// set as first successor servent with id 0, for sending of update message
 		String[] firstServentInfo = welcomeMsg.getFirstServentIpAddressPort().split(":");
-		successorTable[0] = new ServentInfo(firstServentInfo[0], Integer.parseInt(firstServentInfo[1]));
+		successorTable[0] = new ServentInfo(firstServentInfo[0], Integer.parseInt(firstServentInfo[1]), Integer.parseInt(firstServentInfo[1]) + 10);
 
 		allNodeIdInfoMap.put(AppConfig.myServentInfo.getId(), AppConfig.myServentInfo);
 		AppConfig.timestampedStandardPrint(allNodeIdInfoMap.toString());
@@ -183,6 +186,15 @@ public class ChordState {
 	public int getNodeIdForServentPortAndAddress(int port, String ipAddress) {
 		for (Map.Entry<Integer, ServentInfo> entry: allNodeIdInfoMap.entrySet()) {
 			if (entry.getValue().getListenerPort() == port && entry.getValue().getIpAddress().equals(ipAddress)) {
+				return entry.getKey();
+			}
+		}
+		return -1;
+	}
+
+	public int getNodeIdForFifoListenerPortAndAddress(int fifoPort, String ipAddress) {
+		for (Map.Entry<Integer, ServentInfo> entry: allNodeIdInfoMap.entrySet()) {
+			if (entry.getValue().getFifoListenerPort() == fifoPort && entry.getValue().getIpAddress().equals(ipAddress)) {
 				return entry.getKey();
 			}
 		}
@@ -334,15 +346,28 @@ public class ChordState {
 		}
 	}
 
-	// dodajemo u mapu nove vrednosti
+	// add new servents and fifo workers
 	public void addNodes(Map<Integer, ServentInfo> newNodes) {
 		for (Map.Entry<Integer, ServentInfo> entry: newNodes.entrySet()) {
-			allNodeIdInfoMap.put(entry.getKey(), entry.getValue());
+			int serventId = entry.getKey();
+			allNodeIdInfoMap.put(serventId, entry.getValue());
+
+			if (!fifoSendWorkerMap.containsKey(serventId)) {	// add fifo worker for servent
+				FifoSendWorker senderWorker = new FifoSendWorker(serventId);
+				Thread senderThread = new Thread(senderWorker);
+				senderThread.start();
+				fifoSendWorkerMap.put(serventId, senderWorker);
+			}
 		}
 
-		//todo: sort po kljucevima ovde?
-
+		MessageUtil.initializePendingMessages();
 		updateSuccessorTable();
+	}
+
+	public void setFifoSendWorkerMapWorkers(Map<Integer, FifoSendWorker> newFifoWorkers) {
+		for (Map.Entry<Integer, FifoSendWorker> entry: newFifoWorkers.entrySet()) {
+			fifoSendWorkerMap.put(entry.getKey(), entry.getValue());
+		}
 	}
 
 	/**
@@ -500,4 +525,6 @@ public class ChordState {
 	public List<Point> getReceivedComputedPoints() {
 		return receivedComputedPoints;
 	}
+
+	public Map<Integer, FifoSendWorker> getFifoSendWorkerMap() { return fifoSendWorkerMap; }
 }

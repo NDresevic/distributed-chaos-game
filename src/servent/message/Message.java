@@ -60,4 +60,12 @@ public interface Message extends Serializable {
 	 */
 	int getMessageId();
 
+	int getClock();
+	void setClock(int clock);
+
+	/**
+	 *
+	 * @return
+	 */
+	boolean isFifo();
 }

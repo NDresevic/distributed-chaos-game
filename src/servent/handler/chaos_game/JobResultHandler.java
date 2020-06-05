@@ -51,6 +51,7 @@ public class JobResultHandler implements MessageHandler {
             return;
         }
 
+        AppConfig.lamportMutex.releaseMyCriticalSection();
         ImageUtil.renderImage(jobName, "", width, height, proportion, resultPoints);
     }
 }

@@ -2,10 +2,17 @@ package servent.message.util;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import app.AppConfig;
+import app.models.ServentInfo;
 import servent.message.Message;
+import servent.message.MessageType;
 
 /**
  * For now, just the read and send implementation, based on Java serializing.
@@ -26,7 +33,17 @@ public class MessageUtil {
 	 * Flip this to false to disable printing every message send / receive.
 	 */
 	public static final boolean MESSAGE_UTIL_PRINTING = true;
-	
+
+	// todo: promena pending messages kad neko izadje
+	// todo: promena u ServentInfo zbog update itd..
+	public static Map<Integer, BlockingQueue<Message>> pendingMessages = new ConcurrentHashMap<>();
+
+	public static void initializePendingMessages() {
+		for (int i = 0; i < AppConfig.chordState.getAllNodeIdInfoMap().size(); i++) {
+			pendingMessages.putIfAbsent(i, new LinkedBlockingQueue<>());
+		}
+	}
+
 	public static Message readMessage(Socket socket) {
 		
 		Message clientMessage = null;
@@ -35,6 +52,13 @@ public class MessageUtil {
 			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 	
 			clientMessage = (Message) ois.readObject();
+
+			if (clientMessage.isFifo()) {
+				String response = "ACK";
+				ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+				oos.writeObject(response);
+				oos.flush();
+			}
 			
 			socket.close();
 		} catch (IOException e) {
@@ -52,8 +76,22 @@ public class MessageUtil {
 	}
 	
 	public static void sendMessage(Message message) {
-		Thread delayedSender = new Thread(new DelayedMessageSender(message));
-		
-		delayedSender.start();
+		if (message.isFifo()) {
+			try {
+				for (Map.Entry<Integer, ServentInfo> entry: AppConfig.chordState.getAllNodeIdInfoMap().entrySet()) {
+					if (entry.getValue().getIpAddress().equals(message.getReceiverIpAddress()) &&
+							entry.getValue().getFifoListenerPort() == message.getReceiverPort()) {
+						pendingMessages.putIfAbsent(entry.getKey(), new LinkedBlockingQueue<>());
+						pendingMessages.get(entry.getKey()).put(message);
+					}
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		} else {
+			Thread delayedSender = new Thread(new DelayedMessageSender(message));
+
+			delayedSender.start();
+		}
 	}
 }

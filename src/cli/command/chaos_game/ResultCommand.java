@@ -31,6 +31,7 @@ public class ResultCommand implements CLICommand {
             int lastServentId = AppConfig.chordState.getLastIdForJob(jobName);
             ServentInfo receiverServent = AppConfig.chordState.getNextNodeForServentId(firstServentId);
 
+            AppConfig.lamportMutex.acquireLock();
             AskJobResultMessage askJobResultMessage = new AskJobResultMessage(
                     AppConfig.myServentInfo.getListenerPort(),
                     receiverServent.getListenerPort(),
@@ -43,6 +44,7 @@ public class ResultCommand implements CLICommand {
             int receiverId = AppConfig.chordState.getIdForFractalIDAndJob(fractalId, jobName);
             ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(receiverId);
 
+            AppConfig.lamportMutex.acquireLock();
             AskJobFractalIDResultMessage message = new AskJobFractalIDResultMessage(
                     AppConfig.myServentInfo.getListenerPort(),
                     nextServent.getListenerPort(),

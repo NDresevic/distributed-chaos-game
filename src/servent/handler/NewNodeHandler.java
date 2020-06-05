@@ -4,10 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import app.AppConfig;
+import app.lamport_mutex.LamportMutex;
 import servent.message.Message;
 import servent.message.MessageType;
 import servent.message.NewNodeMessage;
 import servent.message.WelcomeMessage;
+import servent.message.lamport_mutex.RequestMessage;
 import servent.message.util.MessageUtil;
 
 public class NewNodeHandler implements MessageHandler {
@@ -32,6 +34,10 @@ public class NewNodeHandler implements MessageHandler {
 
 		int hisId = AppConfig.myServentInfo.getId() + 1;
 		Map<Integer, Integer> hisValues = new HashMap<>();
+
+		// todo: lock za ukljucivanje
+//		AppConfig.lamportMutex.acquireLock();
+
 		WelcomeMessage wm = new WelcomeMessage(AppConfig.myServentInfo.getListenerPort(), newNodePort,
 				AppConfig.myServentInfo.getIpAddress(), newNodeIpAddress, hisId, firstServentInfo, hisValues);
 		MessageUtil.sendMessage(wm);

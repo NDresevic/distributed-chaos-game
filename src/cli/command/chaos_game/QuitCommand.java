@@ -5,8 +5,10 @@ import app.models.JobExecution;
 import app.models.Point;
 import cli.CLIParser;
 import cli.command.CLICommand;
+import servent.FifoListener;
 import servent.SimpleServentListener;
 import servent.message.chaos_game.QuitMessage;
+import servent.message.util.FifoSendWorker;
 import servent.message.util.MessageUtil;
 
 import java.io.IOException;
@@ -14,15 +16,18 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class QuitCommand implements CLICommand {
 
     private CLIParser parser;
-    private SimpleServentListener listener;
+    private SimpleServentListener serventListener;
+    private FifoListener fifoListener;
 
-    public QuitCommand(CLIParser parser, SimpleServentListener listener) {
+    public QuitCommand(CLIParser parser, SimpleServentListener serventListener, FifoListener fifoListener) {
         this.parser = parser;
-        this.listener = listener;
+        this.serventListener = serventListener;
+        this.fifoListener = fifoListener;
     }
 
     @Override
@@ -73,8 +78,13 @@ public class QuitCommand implements CLICommand {
             e.printStackTrace();
         }
 
-        AppConfig.timestampedStandardPrint("Quitting...");
         parser.stop();
-        listener.stop();
+        serventListener.stop();
+        fifoListener.stop();
+        for (Map.Entry<Integer, FifoSendWorker> entry: AppConfig.chordState.getFifoSendWorkerMap().entrySet()) {
+            entry.getValue().stop();
+        }
+
+        AppConfig.timestampedStandardPrint("Quitting...");
     }
 }

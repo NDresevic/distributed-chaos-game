@@ -1,5 +1,7 @@
 package app;
 
+import app.lamport_mutex.LamportClock;
+import app.lamport_mutex.LamportMutex;
 import app.models.Job;
 import app.models.Point;
 import app.models.ServentInfo;
@@ -53,6 +55,9 @@ public class AppConfig {
 	public static int BOOTSTRAP_PORT;
 
 	public static ChordState chordState;
+
+	public static LamportClock lamportClock;
+	public static LamportMutex lamportMutex;
 	
 	/**
 	 * Reads a config file. Should be called once at start of app.
@@ -87,7 +92,9 @@ public class AppConfig {
 
 		ChordState.CHORD_SIZE = 64;
 		
-		myServentInfo = new ServentInfo(BOOTSTRAP_IP_ADDRESS, BOOTSTRAP_PORT);
+		myServentInfo = new ServentInfo(BOOTSTRAP_IP_ADDRESS, BOOTSTRAP_PORT, 0);
+		lamportClock = new LamportClock();
+		lamportMutex = new LamportMutex(myServentInfo);
 	}
 
 	public static void readServentConfig(String configName, int serventId) {
@@ -107,7 +114,9 @@ public class AppConfig {
 			String ipAddress = properties.getProperty("ip");
 			int listenerPort = Integer.parseInt(properties.getProperty("port"));
 
-			myServentInfo = new ServentInfo(ipAddress, listenerPort);
+			myServentInfo = new ServentInfo(ipAddress, listenerPort, listenerPort + 10);
+			lamportClock = new LamportClock();
+			lamportMutex = new LamportMutex(myServentInfo);
 		} catch (NumberFormatException e) {
 			timestampedErrorPrint("Problem reading ip_address or port. Exiting...");
 			System.exit(0);

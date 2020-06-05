@@ -16,6 +16,8 @@ public class StatusCommand implements CLICommand {
     @Override
     public void execute(String args) {
         if (args == null || args.equals("")) { // get status for everything
+
+            AppConfig.lamportMutex.acquireLock();
             AskStatusMessage askStatusMessage = new AskStatusMessage(AppConfig.myServentInfo.getListenerPort(),
                     AppConfig.chordState.getNextNodePort(), AppConfig.myServentInfo.getIpAddress(),
                     AppConfig.chordState.getNextNodeIpAddress(), AppConfig.chordState.getFirstSuccessorId(), 2);
@@ -29,6 +31,7 @@ public class StatusCommand implements CLICommand {
             int firstServentId = AppConfig.chordState.getFirstIdForJob(jobName);
             ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(firstServentId);
 
+            AppConfig.lamportMutex.acquireLock();
             AskStatusMessage askStatusMessage = new AskStatusMessage(AppConfig.myServentInfo.getListenerPort(),
                     nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
                     nextServent.getIpAddress(), firstServentId, jobName, 1);
@@ -39,6 +42,7 @@ public class StatusCommand implements CLICommand {
             int receiverId = AppConfig.chordState.getIdForFractalIDAndJob(fractalId, jobName);
             ServentInfo nextServent = AppConfig.chordState.getNextNodeForServentId(receiverId);
 
+            AppConfig.lamportMutex.acquireLock();
             AskStatusMessage askStatusMessage = new AskStatusMessage(AppConfig.myServentInfo.getListenerPort(),
                     nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
                     nextServent.getIpAddress(), receiverId, jobName, fractalId, 0);

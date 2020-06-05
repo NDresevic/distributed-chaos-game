@@ -12,6 +12,7 @@ import cli.command.chord.DHTGetCommand;
 import cli.command.chord.DHTPutCommand;
 import cli.command.chord.InfoCommand;
 import cli.command.chord.PauseCommand;
+import servent.FifoListener;
 import servent.SimpleServentListener;
 
 /**
@@ -40,7 +41,7 @@ public class CLIParser implements Runnable, Cancellable {
 
 	private Scanner scanner;
 	
-	public CLIParser(SimpleServentListener listener) {
+	public CLIParser(SimpleServentListener listener, FifoListener fifoListener) {
 		this.commandList = new ArrayList<>();
 		
 		commandList.add(new InfoCommand());
@@ -48,7 +49,7 @@ public class CLIParser implements Runnable, Cancellable {
 		commandList.add(new SuccessorInfo());
 		commandList.add(new DHTGetCommand());
 		commandList.add(new DHTPutCommand());
-		commandList.add(new QuitCommand(this, listener));
+		commandList.add(new QuitCommand(this, listener, fifoListener));
 		commandList.add(new StartCommand(this));
 		commandList.add(new ResultCommand());
 		commandList.add(new StopCommand());

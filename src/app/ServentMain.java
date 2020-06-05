@@ -2,6 +2,7 @@ package app;
 
 import app.models.Job;
 import cli.CLIParser;
+import servent.FifoListener;
 import servent.SimpleServentListener;
 
 /**
@@ -57,8 +58,12 @@ public class ServentMain {
 		SimpleServentListener simpleListener = new SimpleServentListener();
 		Thread listenerThread = new Thread(simpleListener);
 		listenerThread.start();
+
+		FifoListener fifoListener = new FifoListener();
+		Thread fifoListenerThread = new Thread(fifoListener);
+		fifoListenerThread.start();
 		
-		CLIParser cliParser = new CLIParser(simpleListener);
+		CLIParser cliParser = new CLIParser(simpleListener, fifoListener);
 		Thread cliThread = new Thread(cliParser);
 		cliThread.start();
 		

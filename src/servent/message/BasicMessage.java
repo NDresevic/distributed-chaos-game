@@ -12,7 +12,7 @@ import app.ChordState;
  * @author bmilojkovic
  *
  */
-public class BasicMessage implements Message {
+public class BasicMessage implements Message, Comparable<Message> {
 
 	private static final long serialVersionUID = -9075856313609777945L;
 	private final MessageType type;
@@ -21,7 +21,8 @@ public class BasicMessage implements Message {
 	private final String senderIpAddress;
 	private final String receiverIpAddress;
 	private final String messageText;
-	
+	private int clock;
+
 	//This gives us a unique id - incremented in every natural constructor.
 	private static AtomicInteger messageCounter = new AtomicInteger(0);
 	private final int messageId;
@@ -39,7 +40,8 @@ public class BasicMessage implements Message {
 		this.senderIpAddress = senderIpAddress;
 		this.receiverIpAddress = receiverIpAddress;
 		this.messageText = messageText;
-		
+		this.clock = 0;
+
 		this.messageId = messageCounter.getAndIncrement();
 	}
 	
@@ -77,7 +79,22 @@ public class BasicMessage implements Message {
 	public int getMessageId() {
 		return messageId;
 	}
-	
+
+	@Override
+	public int getClock() {
+		return clock;
+	}
+
+	@Override
+	public void setClock(int clock) {
+		this.clock = clock;
+	}
+
+	@Override
+	public boolean isFifo() {
+		return false;
+	}
+
 	/**
 	 * Comparing messages is based on their unique id and the original sender ip address and port.
 	 */
@@ -114,5 +131,11 @@ public class BasicMessage implements Message {
 		return "[" + getSenderIpAddress() + "|" + getSenderPort() +
 				"|" + getMessageId() + "|" + getMessageText() + "|" + getMessageType() +
 				"|" + getReceiverIpAddress() + "|" + getReceiverPort() + "]";
+	}
+
+	@Override
+	public int compareTo(Message other) {
+		if (this.getClock() < other.getClock()) return -1;
+		return 1;
 	}
 }

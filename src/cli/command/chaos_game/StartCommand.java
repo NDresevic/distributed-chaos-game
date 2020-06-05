@@ -28,6 +28,8 @@ public class StartCommand implements CLICommand {
     public void execute(String args) {
         int serventCount = AppConfig.chordState.getAllNodeIdInfoMap().size();
         int activeJobsCount = AppConfig.chordState.getActiveJobsCount();
+
+        // todo: dodati ovo kad neko quittuje
         if (serventCount < 1 || serventCount < activeJobsCount + 1) {
             AppConfig.timestampedErrorPrint("There are not enough servents to execute jobs.");
             return;

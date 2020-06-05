@@ -16,6 +16,7 @@ public class ServentInfo implements Serializable {
 	private static final long serialVersionUID = 5304170042791281555L;
 	private final String ipAddress;
 	private final int listenerPort;
+	private final int fifoListenerPort;
 	private int weakFailureLimit;
 	private int strongFailureLimit;
 	private List<Job> jobs;
@@ -23,9 +24,10 @@ public class ServentInfo implements Serializable {
 	private final int chordId;
 	private int id;
 
-	public ServentInfo(String ipAddress, int listenerPort) {
+	public ServentInfo(String ipAddress, int listenerPort, int fifoListenerPort) {
 		this.ipAddress = ipAddress;
 		this.listenerPort = listenerPort;
+		this.fifoListenerPort = fifoListenerPort;
 		this.weakFailureLimit = 1000;
 		this.strongFailureLimit = 1000;
 		this.jobs = new ArrayList<>();
@@ -41,6 +43,8 @@ public class ServentInfo implements Serializable {
 	public int getListenerPort() {
 		return listenerPort;
 	}
+
+	public int getFifoListenerPort() { return fifoListenerPort; }
 
 	public int getChordId() {
 		return chordId;

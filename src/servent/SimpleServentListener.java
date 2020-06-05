@@ -15,6 +15,7 @@ import servent.handler.chord.AskGetHandler;
 import servent.handler.chord.PutHandler;
 import servent.handler.chord.SorryHandler;
 import servent.handler.chord.TellGetHandler;
+import servent.handler.lamport_mutex.ReleaseCriticalSectionHandler;
 import servent.message.Message;
 import servent.message.util.MessageUtil;
 
@@ -121,6 +122,9 @@ public class SimpleServentListener implements Runnable, Cancellable {
 					break;
 				case JOB_SCHEDULE:
 					messageHandler = new JobScheduleHandler(clientMessage);
+					break;
+				case RELEASE_CRITICAL_SECTION:
+					messageHandler = new ReleaseCriticalSectionHandler(clientMessage);
 					break;
 				}
 				

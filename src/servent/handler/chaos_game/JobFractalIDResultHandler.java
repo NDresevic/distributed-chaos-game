@@ -53,6 +53,7 @@ public class JobFractalIDResultHandler implements MessageHandler {
             return;
         }
 
+        AppConfig.lamportMutex.releaseMyCriticalSection();
         ImageUtil.renderImage(jobName, fractalId, width, height, proportion, resultPoints);
     }
 }

@@ -117,6 +117,7 @@ public class BootstrapServer {
 					activeServents.remove(quitterServent);
 					newServentSocket.close();
 				}
+			} catch (SocketTimeoutException ignored) {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
