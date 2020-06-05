@@ -154,6 +154,8 @@ public class JobUtil {
     }
 
     public static Map<FractalIdJob, FractalIdJob> executeJobScheduling(int serventCount, JobScheduleType scheduleType) {
+        AppConfig.lamportMutex.acquireLock();
+
         AppConfig.timestampedStandardPrint("Executing job scheduling for type: " + scheduleType);
 
         List<Job> activeJobsList = AppConfig.chordState.getActiveJobsList();
@@ -208,6 +210,7 @@ public class JobUtil {
             }
         }
         AppConfig.timestampedStandardPrint("Mapped fractals: \n" + mappedFractals);
+        AppConfig.timestampedStandardPrint("Job fractals map: \n" + jobFractalsMap);
 
         for (Map.Entry<Job, List<String>> entry: jobFractalsMap.entrySet()) {
             Job currentJob = entry.getKey();
@@ -284,6 +287,7 @@ public class JobUtil {
                 break;
             }
         }
+        AppConfig.timestampedStandardPrint("Received all ack messages...");
 
         AppConfig.chordState.getReceivedAckMessagesCount().set(0);
         AppConfig.lamportMutex.releaseMyCriticalSection();

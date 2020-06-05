@@ -34,6 +34,9 @@ public class AckIdleHandler implements MessageHandler {
             return;
         }
 
+        int senderId = AppConfig.chordState.getNodeIdForServentPortAndAddress(ackIdleMessage.getSenderPort(),
+                ackIdleMessage.getSenderIpAddress());
+        AppConfig.timestampedStandardPrint("Acknowledge message received from: " + senderId);
         AppConfig.chordState.getReceivedAckMessagesCount().getAndIncrement();
     }
 

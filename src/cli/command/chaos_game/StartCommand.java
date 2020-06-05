@@ -81,7 +81,6 @@ public class StartCommand implements CLICommand {
             return;
         }
 
-        AppConfig.lamportMutex.acquireLock();
         AppConfig.chordState.addNewJob(job);
         JobUtil.executeJobScheduling(serventCount, JobScheduleType.JOB_ADDED);
     }

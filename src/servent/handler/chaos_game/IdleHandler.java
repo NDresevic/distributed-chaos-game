@@ -48,16 +48,15 @@ public class IdleHandler implements MessageHandler {
             return;
         }
 
-        if (AppConfig.chordState.getExecutionJob() != null) {   // send my data if I was executing
-            JobExecutionHandler.sendMyCurrentData(mappedFractalJobs, scheduleType);
-        }
-
         AppConfig.chordState.setServentJobs(serventJobsMap);
         AppConfig.chordState.addNewJobs(activeJobs);
         AppConfig.chordState.resetAfterReceivedComputedPoints();
         AppConfig.timestampedStandardPrint("I am idle...");
 
-        // todo: neki bug sa idle cvorovima i mutexom?
+        if (AppConfig.chordState.getExecutionJob() != null) {   // send my data if I was executing
+            JobExecutionHandler.sendMyCurrentData(mappedFractalJobs, scheduleType);
+            AppConfig.chordState.setExecutionJob(null);
+        }
 
         // send ack to node which started job
         ServentInfo intercessorServent = AppConfig.chordState.getNextNodeForServentId(jobSchedulerId);

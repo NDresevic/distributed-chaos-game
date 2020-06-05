@@ -46,6 +46,8 @@ public class StopJobHandler implements MessageHandler {
                 stopJobMessage.getSenderIpAddress().equals(AppConfig.myServentInfo.getIpAddress())) {
             AppConfig.timestampedStandardPrint("Stop job message for job \'" + jobName + "\' made a circle.");
 
+            AppConfig.lamportMutex.releaseMyCriticalSection();
+
             if (AppConfig.chordState.getActiveJobsCount() > 0) {        // need to reschedule jobs
                 sendReschedulingMessage(JobScheduleType.JOB_REMOVED);
             }

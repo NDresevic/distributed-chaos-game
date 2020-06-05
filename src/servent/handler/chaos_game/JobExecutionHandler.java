@@ -65,10 +65,18 @@ public class JobExecutionHandler implements MessageHandler {
         }
 
         AppConfig.timestampedStandardPrint("Fractal ids: " + fractalIds.toString());
+        AppConfig.timestampedStandardPrint("Job: " + job.getName());
         AppConfig.timestampedStandardPrint("Starting points: " + pointList.toString());
 
         // no further splitting, job execution can start
         if (fractalIds.size() == 1) {
+
+            // send ack to node which started job
+            ServentInfo intercessorServent = AppConfig.chordState.getNextNodeForServentId(jobSchedulerId);
+            AckJobExecutionMessage ackJobExecutionMessage = new AckJobExecutionMessage(AppConfig.myServentInfo.getListenerPort(),
+                    intercessorServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
+                    intercessorServent.getIpAddress(), jobSchedulerId);
+            MessageUtil.sendMessage(ackJobExecutionMessage);
 
             if (AppConfig.chordState.getExecutionJob() != null) {   // I am already executing a job
                 sendMyCurrentData(mappedFractalJobs, scheduleType);
@@ -93,10 +101,12 @@ public class JobExecutionHandler implements MessageHandler {
             AppConfig.timestampedStandardPrint("Waiting for " + expectedMessagesCount +
                     " servents to send me their computed points...");
             while (true) {
-                if (AppConfig.chordState.getReceivedComputedPointsMessagesCount().get() == expectedMessagesCount) {
+                if (AppConfig.chordState.getReceivedComputedPointsMessagesCount().get() == expectedMessagesCount
+                    || expectedMessagesCount == 0) {
                     break;
                 }
             }
+            AppConfig.timestampedStandardPrint("All computed points received...");
 
             AppConfig.chordState.addNewJob(job);
             JobExecution jobExecution = new JobExecution(job.getName(), myNewFractalID, job.getProportion(),
@@ -116,13 +126,6 @@ public class JobExecutionHandler implements MessageHandler {
 
             // reset received data for next time
             AppConfig.chordState.resetAfterReceivedComputedPoints();
-
-            // send ack to node which started job
-            ServentInfo intercessorServent = AppConfig.chordState.getNextNodeForServentId(jobSchedulerId);
-            AckJobExecutionMessage ackJobExecutionMessage = new AckJobExecutionMessage(AppConfig.myServentInfo.getListenerPort(),
-                    intercessorServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
-                    intercessorServent.getIpAddress(), jobSchedulerId);
-            MessageUtil.sendMessage(ackJobExecutionMessage);
             return;
         }
 

@@ -57,7 +57,6 @@ public class QuitHandler implements MessageHandler {
 //            AppConfig.lamportMutex.releaseMyCriticalSection();
 
             if (AppConfig.chordState.getActiveJobsCount() > 0) {    // reschedule and send quitter data
-                AppConfig.lamportMutex.acquireLock();
                 int serventCount = AppConfig.chordState.getAllNodeIdInfoMap().size();
                 Map<FractalIdJob, FractalIdJob> mappedFractals = JobUtil.executeJobScheduling(serventCount, JobScheduleType.SERVENT_REMOVED);
 

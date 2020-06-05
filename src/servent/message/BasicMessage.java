@@ -135,7 +135,13 @@ public class BasicMessage implements Message, Comparable<Message> {
 
 	@Override
 	public int compareTo(Message other) {
-		if (this.getClock() < other.getClock()) return -1;
-		return 1;
+		if (this.clock > other.getClock()) {
+			return 1;
+		} else if (this.clock < other.getClock()) {
+			return -1;
+		} else if (this.getMessageId() > other.getMessageId()) { // todo: check poredjenje?
+			return 1;
+		}
+		return -1;
 	}
 }

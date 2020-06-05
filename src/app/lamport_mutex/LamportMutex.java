@@ -115,7 +115,6 @@ public class LamportMutex {
 
     public synchronized void replyMessageEvent(Message message) {
         if (requestMade) {
-            AppConfig.timestampedStandardPrint("Pending replies: " + pendingReplies);
             for (ServentInfo pendingServent: pendingReplies) {
                 if (message.getSenderIpAddress().equals(pendingServent.getIpAddress())
                         && message.getSenderPort() == pendingServent.getFifoListenerPort()) {
@@ -123,6 +122,7 @@ public class LamportMutex {
                     break;
                 }
             }
+            AppConfig.timestampedStandardPrint("Pending replies: " + pendingReplies);
         } else {
             AppConfig.timestampedErrorPrint("Got a reply message, but didn't request the critical section.");
         }

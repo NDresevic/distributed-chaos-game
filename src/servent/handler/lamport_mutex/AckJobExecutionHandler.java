@@ -34,6 +34,9 @@ public class AckJobExecutionHandler implements MessageHandler {
             return;
         }
 
+        int senderId = AppConfig.chordState.getNodeIdForServentPortAndAddress(ackJobExecutionMessage.getSenderPort(),
+                ackJobExecutionMessage.getSenderIpAddress());
+        AppConfig.timestampedStandardPrint("Acknowledge message received from: " + senderId);
         AppConfig.chordState.getReceivedAckMessagesCount().getAndIncrement();
     }
 
