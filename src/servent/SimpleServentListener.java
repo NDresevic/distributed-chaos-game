@@ -15,6 +15,8 @@ import servent.handler.chord.AskGetHandler;
 import servent.handler.chord.PutHandler;
 import servent.handler.chord.SorryHandler;
 import servent.handler.chord.TellGetHandler;
+import servent.handler.lamport_mutex.AckIdleHandler;
+import servent.handler.lamport_mutex.AckJobExecutionHandler;
 import servent.handler.lamport_mutex.ReleaseCriticalSectionHandler;
 import servent.message.Message;
 import servent.message.util.MessageUtil;
@@ -126,6 +128,11 @@ public class SimpleServentListener implements Runnable, Cancellable {
 				case RELEASE_CRITICAL_SECTION:
 					messageHandler = new ReleaseCriticalSectionHandler(clientMessage);
 					break;
+				case ACK_IDLE:
+					messageHandler = new AckIdleHandler(clientMessage);
+					break;
+				case ACK_JOB_EXECUTION:
+					messageHandler = new AckJobExecutionHandler(clientMessage);
 				}
 				
 				threadPool.submit(messageHandler);

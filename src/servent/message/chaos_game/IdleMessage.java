@@ -18,17 +18,19 @@ public class IdleMessage extends BasicMessage {
     private Map<FractalIdJob, FractalIdJob> mappedFractalsJobs;
     private List<Job> activeJobs;
     private JobScheduleType scheduleType;
+    private int jobSchedulerId;
 
     public IdleMessage(int senderPort, int receiverPort, String senderIpAddress, String receiverIpAddress,
                        Map<Integer, FractalIdJob> serventJobsMap, int finalReceiverId,
                        Map<FractalIdJob, FractalIdJob> mappedFractalsJobs, List<Job> activeJobs,
-                       JobScheduleType scheduleType) {
+                       JobScheduleType scheduleType, int jobSchedulerId) {
         super(MessageType.IDLE, senderPort, receiverPort, senderIpAddress, receiverIpAddress);
         this.serventJobsMap = serventJobsMap;
         this.finalReceiverId = finalReceiverId;
         this.mappedFractalsJobs = mappedFractalsJobs;
         this.activeJobs = activeJobs;
         this.scheduleType = scheduleType;
+        this.jobSchedulerId = jobSchedulerId;
     }
 
     public Map<Integer, FractalIdJob> getServentJobsMap() { return serventJobsMap; }
@@ -40,4 +42,6 @@ public class IdleMessage extends BasicMessage {
     public List<Job> getActiveJobs() { return activeJobs; }
 
     public JobScheduleType getScheduleType() { return scheduleType; }
+
+    public int getJobSchedulerId() { return jobSchedulerId; }
 }

@@ -9,6 +9,7 @@ import servent.message.chaos_game.ComputedPointsMessage;
 import servent.message.chaos_game.JobExecutionMessage;
 import servent.message.Message;
 import servent.message.MessageType;
+import servent.message.lamport_mutex.AckJobExecutionMessage;
 import servent.message.util.MessageUtil;
 
 import java.util.ArrayList;
@@ -19,8 +20,28 @@ public class JobExecutionHandler implements MessageHandler {
 
     private Message clientMessage;
 
+    private JobExecutionMessage jobExecutionMessage;
+    private int receiverId;
+    private List<String> fractalIds;
+    private List<Point> pointList;
+    private Job job;
+    private int currentLevel;
+    private Map<FractalIdJob, FractalIdJob> mappedFractalJobs;
+    private JobScheduleType scheduleType;
+    private int jobSchedulerId;
+
     public JobExecutionHandler(Message clientMessage) {
         this.clientMessage = clientMessage;
+
+        jobExecutionMessage = (JobExecutionMessage) clientMessage;
+        receiverId = jobExecutionMessage.getFinalReceiverId();
+        fractalIds = jobExecutionMessage.getFractalIds();
+        pointList = jobExecutionMessage.getStartPoints();
+        job = jobExecutionMessage.getJob();
+        currentLevel = jobExecutionMessage.getLevel();
+        mappedFractalJobs = jobExecutionMessage.getMappedFractalsJobs();
+        scheduleType = jobExecutionMessage.getScheduleType();
+        jobSchedulerId = jobExecutionMessage.getJobSchedulerId();
     }
 
     @Override
@@ -30,14 +51,6 @@ public class JobExecutionHandler implements MessageHandler {
             return;
         }
 
-        JobExecutionMessage jobExecutionMessage = (JobExecutionMessage) clientMessage;
-        int receiverId = jobExecutionMessage.getFinalReceiverId();
-        List<String> fractalIds = jobExecutionMessage.getFractalIds();
-        List<Point> pointList = jobExecutionMessage.getStartPoints();
-        Job job = jobExecutionMessage.getJob();
-        int currentLevel = jobExecutionMessage.getLevel();
-        Map<FractalIdJob, FractalIdJob> mappedFractalJobs = jobExecutionMessage.getMappedFractalsJobs();
-        JobScheduleType scheduleType = jobExecutionMessage.getScheduleType();
         AppConfig.chordState.setServentJobs(jobExecutionMessage.getServentJobsMap());
 
         // if I am not intended final receiver then just pass message further
@@ -46,7 +59,7 @@ public class JobExecutionHandler implements MessageHandler {
             JobExecutionMessage jem = new JobExecutionMessage(AppConfig.myServentInfo.getListenerPort(),
                     nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(), nextServent.getIpAddress(),
                     fractalIds, pointList, job, AppConfig.chordState.getServentJobs(), currentLevel, receiverId,
-                    mappedFractalJobs, scheduleType);
+                    mappedFractalJobs, scheduleType, jobSchedulerId);
             MessageUtil.sendMessage(jem);
             return;
         }
@@ -103,6 +116,13 @@ public class JobExecutionHandler implements MessageHandler {
 
             // reset received data for next time
             AppConfig.chordState.resetAfterReceivedComputedPoints();
+
+            // send ack to node which started job
+            ServentInfo intercessorServent = AppConfig.chordState.getNextNodeForServentId(jobSchedulerId);
+            AckJobExecutionMessage ackJobExecutionMessage = new AckJobExecutionMessage(AppConfig.myServentInfo.getListenerPort(),
+                    intercessorServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
+                    intercessorServent.getIpAddress(), jobSchedulerId);
+            MessageUtil.sendMessage(ackJobExecutionMessage);
             return;
         }
 
@@ -128,7 +148,7 @@ public class JobExecutionHandler implements MessageHandler {
             JobExecutionMessage jem = new JobExecutionMessage(AppConfig.myServentInfo.getListenerPort(),
                     receiverServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(), receiverServent.getIpAddress(),
                     partialFractalIds, regionPoints, job, AppConfig.chordState.getServentJobs(), level, finalReceiverId,
-                    mappedFractalJobs, scheduleType);
+                    mappedFractalJobs, scheduleType, jobSchedulerId);
             MessageUtil.sendMessage(jem);
         }
     }

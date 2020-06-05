@@ -224,7 +224,7 @@ public class JobUtil {
                 JobExecutionMessage jem = new JobExecutionMessage(AppConfig.myServentInfo.getListenerPort(),
                         receiverServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
                         receiverServent.getIpAddress(), fractals, jobPoints, currentJob, newServentJobsMap,
-                        0, finalReceiverId, mappedFractals, scheduleType);
+                        0, finalReceiverId, mappedFractals, scheduleType, AppConfig.myServentInfo.getId());
                 MessageUtil.sendMessage(jem);
                 continue;
             }
@@ -247,11 +247,18 @@ public class JobUtil {
                 JobExecutionMessage jobExecutionMessage = new JobExecutionMessage(AppConfig.myServentInfo.getListenerPort(),
                         receiverServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
                         receiverServent.getIpAddress(), partialFractalIds, regionPoints, currentJob, newServentJobsMap,
-                        0, finalReceiverId, mappedFractals, scheduleType);
+                        0, finalReceiverId, mappedFractals, scheduleType, AppConfig.myServentInfo.getId());
                 MessageUtil.sendMessage(jobExecutionMessage);
             }
         }
 
+        notifyIdleServents(mappedFractals, scheduleType);
+        finishedJobScheduling(serventCount);
+
+        return mappedFractals;
+    }
+
+    private static void notifyIdleServents(Map<FractalIdJob, FractalIdJob> mappedFractals, JobScheduleType scheduleType) {
         // send to idle nodes that they are idle and new job division
         for (Map.Entry<Integer, ServentInfo> entry: AppConfig.chordState.getAllNodeIdInfoMap().entrySet()) {
             int serventId = entry.getKey();
@@ -261,11 +268,24 @@ public class JobUtil {
                 IdleMessage idleMessage = new IdleMessage(AppConfig.myServentInfo.getListenerPort(),
                         nextServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
                         nextServent.getIpAddress(), new HashMap<>(AppConfig.chordState.getServentJobs()),
-                        serventId, mappedFractals, new ArrayList<>(AppConfig.chordState.getActiveJobsList()), scheduleType);
+                        serventId, mappedFractals, new ArrayList<>(AppConfig.chordState.getActiveJobsList()),
+                        scheduleType, AppConfig.myServentInfo.getId());
                 MessageUtil.sendMessage(idleMessage);
             }
         }
+    }
 
-        return mappedFractals;
+    private static void finishedJobScheduling(int serventCount) {
+
+        // wait for others to send ack job execution or ack idle messages
+        AppConfig.timestampedStandardPrint("Waiting for ack messages...");
+        while (true) {
+            if (AppConfig.chordState.getReceivedAckMessagesCount().get() == serventCount) {
+                break;
+            }
+        }
+
+        AppConfig.chordState.getReceivedAckMessagesCount().set(0);
+        AppConfig.lamportMutex.releaseMyCriticalSection();
     }
 }

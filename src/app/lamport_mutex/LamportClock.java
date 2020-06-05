@@ -14,9 +14,7 @@ public class LamportClock {
         this(1);
     }
 
-    public synchronized void localEvent() {   // local event -- local_event
-        clock += d;
-    }
+    public synchronized void localEvent() { clock += d; }
 
     public synchronized void messageEvent(int messageClock) {
         this.localEvent();

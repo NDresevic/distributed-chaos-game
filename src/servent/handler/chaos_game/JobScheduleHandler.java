@@ -40,6 +40,7 @@ public class JobScheduleHandler implements MessageHandler {
             return;
         }
 
+        AppConfig.lamportMutex.acquireLock();
         int serventCount = AppConfig.chordState.getAllNodeIdInfoMap().size();
         JobUtil.executeJobScheduling(serventCount, scheduleType);
     }

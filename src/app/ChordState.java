@@ -59,6 +59,8 @@ public class ChordState {
 	private AtomicInteger receivedComputedPointsMessagesCount = new AtomicInteger(0);
 	private AtomicInteger expectedComputedPointsMessagesCount = new AtomicInteger(0);
 
+    private AtomicInteger receivedAckMessagesCount = new AtomicInteger(0);
+
 	// [id -> fractalId + job]
 	private Map<Integer, FractalIdJob> serventJobs;
 	private List<Job> activeJobsList = new ArrayList<>();
@@ -527,4 +529,6 @@ public class ChordState {
 	}
 
 	public Map<Integer, FifoSendWorker> getFifoSendWorkerMap() { return fifoSendWorkerMap; }
+
+    public AtomicInteger getReceivedAckMessagesCount() { return receivedAckMessagesCount; }
 }

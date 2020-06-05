@@ -81,7 +81,7 @@ public class StartCommand implements CLICommand {
             return;
         }
 
-        // compute number of servents needed for each job
+        AppConfig.lamportMutex.acquireLock();
         AppConfig.chordState.addNewJob(job);
         JobUtil.executeJobScheduling(serventCount, JobScheduleType.JOB_ADDED);
     }

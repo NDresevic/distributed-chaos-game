@@ -6,6 +6,7 @@ import servent.handler.MessageHandler;
 import servent.message.chaos_game.IdleMessage;
 import servent.message.Message;
 import servent.message.MessageType;
+import servent.message.lamport_mutex.AckIdleMessage;
 import servent.message.util.MessageUtil;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class IdleHandler implements MessageHandler {
     private Map<FractalIdJob, FractalIdJob> mappedFractalJobs;
     private List<Job> activeJobs;
     private JobScheduleType scheduleType;
+    private int jobSchedulerId;
 
     public IdleHandler(Message clientMessage) {
         this.clientMessage = clientMessage;
@@ -31,6 +33,7 @@ public class IdleHandler implements MessageHandler {
         mappedFractalJobs = idleMessage.getMappedFractalsJobs();
         activeJobs = idleMessage.getActiveJobs();
         scheduleType = idleMessage.getScheduleType();
+        jobSchedulerId = idleMessage.getJobSchedulerId();
     }
 
     @Override
@@ -53,6 +56,15 @@ public class IdleHandler implements MessageHandler {
         AppConfig.chordState.addNewJobs(activeJobs);
         AppConfig.chordState.resetAfterReceivedComputedPoints();
         AppConfig.timestampedStandardPrint("I am idle...");
+
+        // todo: neki bug sa idle cvorovima i mutexom?
+
+        // send ack to node which started job
+        ServentInfo intercessorServent = AppConfig.chordState.getNextNodeForServentId(jobSchedulerId);
+        AckIdleMessage ackIdleMessage = new AckIdleMessage(AppConfig.myServentInfo.getListenerPort(),
+                intercessorServent.getListenerPort(), AppConfig.myServentInfo.getIpAddress(),
+                intercessorServent.getIpAddress(), jobSchedulerId);
+        MessageUtil.sendMessage(ackIdleMessage);
     }
 
     private void forwardMessage() {
@@ -60,7 +72,7 @@ public class IdleHandler implements MessageHandler {
 
         IdleMessage im = new IdleMessage(idleMessage.getSenderPort(), nextServent.getListenerPort(),
                 idleMessage.getSenderIpAddress(), nextServent.getIpAddress(), serventJobsMap, receiverId,
-                mappedFractalJobs, activeJobs, scheduleType);
+                mappedFractalJobs, activeJobs, scheduleType, jobSchedulerId);
         MessageUtil.sendMessage(im);
     }
 }
