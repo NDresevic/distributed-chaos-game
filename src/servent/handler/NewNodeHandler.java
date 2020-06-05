@@ -35,8 +35,7 @@ public class NewNodeHandler implements MessageHandler {
 		int hisId = AppConfig.myServentInfo.getId() + 1;
 		Map<Integer, Integer> hisValues = new HashMap<>();
 
-		// todo: lock za ukljucivanje
-//		AppConfig.lamportMutex.acquireLock();
+		AppConfig.lamportMutex.acquireLock();
 
 		WelcomeMessage wm = new WelcomeMessage(AppConfig.myServentInfo.getListenerPort(), newNodePort,
 				AppConfig.myServentInfo.getIpAddress(), newNodeIpAddress, hisId, firstServentInfo, hisValues);

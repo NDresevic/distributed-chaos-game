@@ -54,8 +54,7 @@ public class UpdateHandler implements MessageHandler {
 			AppConfig.chordState.setServentJobs(serventJobsMap);	// set current job schedule
 			AppConfig.chordState.addNewJobs(activeJobs);	// add all active jobs
 
-			// todo: fix
-//			this.sendRequestToReleaseCriticalSection();
+			this.sendRequestToReleaseCriticalSection();
 
 			if (AppConfig.chordState.getActiveJobsCount() > 0) {        // need to reschedule jobs
 				StopJobHandler.sendReschedulingMessage(JobScheduleType.SERVENT_ADDED);
