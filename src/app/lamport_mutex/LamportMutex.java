@@ -51,9 +51,10 @@ public class LamportMutex {
         if (requestList.get(0).getSenderPort() == port
                 && requestList.get(0).getSenderIpAddress().equals(ipAddress)) { // the first message in the list should be the one to be released
             requestList.remove(0);
-        } else {
-            AppConfig.timestampedErrorPrint("Release message wasn't from the process first in the queue.");
         }
+//        else {
+//            AppConfig.timestampedErrorPrint("Release message wasn't from the process first in the queue.");
+//        }
     }
 
     public synchronized void releaseMyCriticalSection() { // called when the local node is done executing critical section

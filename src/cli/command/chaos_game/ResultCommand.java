@@ -53,7 +53,5 @@ public class ResultCommand implements CLICommand {
                     jobName, receiverId);
             MessageUtil.sendMessage(message);
         }
-
-        // todo: BUG - kad se trazi rez na istom cvoru koji je zapoceo posao, ne radi -> NEKAD samo???
     }
 }

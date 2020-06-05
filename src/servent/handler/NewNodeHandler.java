@@ -33,12 +33,11 @@ public class NewNodeHandler implements MessageHandler {
 		String firstServentInfo = newNodeMessage.getFirstServentIpAddressPort();
 
 		int hisId = AppConfig.myServentInfo.getId() + 1;
-		Map<Integer, Integer> hisValues = new HashMap<>();
 
 		AppConfig.lamportMutex.acquireLock();
 
 		WelcomeMessage wm = new WelcomeMessage(AppConfig.myServentInfo.getListenerPort(), newNodePort,
-				AppConfig.myServentInfo.getIpAddress(), newNodeIpAddress, hisId, firstServentInfo, hisValues);
+				AppConfig.myServentInfo.getIpAddress(), newNodeIpAddress, hisId, firstServentInfo);
 		MessageUtil.sendMessage(wm);
 	}
 

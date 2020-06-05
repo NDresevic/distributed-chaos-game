@@ -104,7 +104,7 @@ public class ChordState {
 		allNodeIdInfoMap.put(AppConfig.myServentInfo.getId(), AppConfig.myServentInfo);
 		AppConfig.timestampedStandardPrint(allNodeIdInfoMap.toString());
 
-		this.valueMap = welcomeMsg.getValues();
+		this.valueMap = new HashMap<>();
 		
 		//tell bootstrap this node is not a collider
 		try {

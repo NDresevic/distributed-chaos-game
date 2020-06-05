@@ -53,7 +53,6 @@ public class QuitHandler implements MessageHandler {
                 AppConfig.chordState.getAllNodeIdInfoMap().size() == 1) { // message made a circle or I am the only one
             AppConfig.timestampedStandardPrint("Quit message made a circle.");
 
-            // todo: lock
 //            AppConfig.lamportMutex.releaseMyCriticalSection();
 
             if (AppConfig.chordState.getActiveJobsCount() > 0) {    // reschedule and send quitter data
@@ -75,7 +74,6 @@ public class QuitHandler implements MessageHandler {
         }
 
         this.setNewMapOfAllServents();
-        // todo: lock when quit
 //        if (AppConfig.myServentInfo.getId() == quitterId ||
 //                (!AppConfig.chordState.getAllNodeIdInfoMap().containsKey(quitterId) && AppConfig.myServentInfo.getId() == 0)) {
 //            AppConfig.lamportMutex.acquireLock();

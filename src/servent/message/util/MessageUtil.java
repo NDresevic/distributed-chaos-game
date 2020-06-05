@@ -34,8 +34,6 @@ public class MessageUtil {
 	 */
 	public static final boolean MESSAGE_UTIL_PRINTING = true;
 
-	// todo: promena pending messages kad neko izadje
-	// todo: promena u ServentInfo zbog update itd..
 	public static Map<Integer, BlockingQueue<Message>> pendingMessages = new ConcurrentHashMap<>();
 
 	public static void initializePendingMessages() {
