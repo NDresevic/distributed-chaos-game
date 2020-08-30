@@ -13,6 +13,8 @@ Also, the way of communication between system nodes, messages and message sendin
 The main role of the system is to do the job, ie. drawing fractal images that take place
 distributed. Also, all nodes in the system are equal and the system is self-organizing.
 
+<a href="url"><img src="https://github.com/NDresevic/distributed-chaos-game/blob/master/fractal.png" height="350"></a>
+
 ## Nodes in the system
 
 There are two types of nodes in the system, bootstrap (only one in the whole system) and servent nodes
