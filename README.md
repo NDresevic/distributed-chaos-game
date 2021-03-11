@@ -117,17 +117,17 @@ bootstrap then adds it to the list of active servants.
 
 - `Quit\nipX:portX\n` - message sent by the servant who wants to log-off, bootstrap then removes it from its list of active servants.
 
-## Servent and Servent
+### Servent and Servent
 
 Communication between the two servants is done via a socket. Each node is uniquely determined by its IP address and the port on which it listens to messages. The message exchanged between these nodes is an extension to *BasicMessage* messages. *BasicMessage* is a Java serialized message that contains the IP address and port of the sender and the recipient, the unique identifier, the path traveled through the network to reach the final recipient, message text, and other attributes.
 
-## Network routing
+### Network routing
 
 Messages through the network can be sent directly if the nodes are neighbors or over allowed jumps obtained based on each node's neighbor list. Certain types of messages need to read all the nodes in the system, so they are sent circularly throughout the system. Such
 messages are forwarded to the first neighbor until the message bypasses all nodes in the network. Other message types are explicitly intended for one node, and they are routed through the network until
 they reach their destination. Due to routing and the system's architecture, the entire path of messages from node A to node B tends to logarithmic depends on the system's total number of nodes. If node A is not directly connected to node B, intermediate nodes through which the message is transmitted are determined by continually selecting the nodes closest to node B, a direct connection to node A, until node B is reached.
 
-### Message types
+## Message types
 
 **NEW NODE**
 
@@ -200,3 +200,5 @@ It is used to stop the *FifoSendWorker* thread.
 <br />`JobScheduleType scheduleType` - the type of event that causes the redistribution of work, can be:
 *JOB_ADDED, JOB_REMOVED, SERVENT_ADDED, SERVENT_REMOVED*
 <br />`int jobSchedulerId` - the id of the node that started the job redistribution
+
+` There are also additional messages: ACK JOB EXECUTION, IDLE, ACK IDLE, COMPUTED POINTS, ASK STATUS, TELL STATUS, ASK JOB FRACTALID RESULT, TELL JOB FRACTALID RESULT, ASK JOB RESULT, TELL JOB RESULT, STOP JOB, REQUEST, REPLY, RELEASE, RELEASE CRITICAL SECTION.`
